@@ -1,2 +1,4 @@
 # rag-from-scratch
-A theoretical and practical deep dive into foundations of deep reinforcement learning and it's impact on real world applications from scratch.
+I wanted to learn retreival augmented generation from the very core level to advanced State-Of-The-Art level, which is why i created this notebook as in the form my notes, though i can't cover all the concepts, I do go thoroughly into background theory and math behind those concepts as well as code implementation.
+
+Hopefully this is helpful to you guys, Thanks!
