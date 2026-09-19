@@ -1,68 +1,39 @@
-# Modern RAG in Practice — Workshop
+# Modern RAG in Practice
 
-**Build a grounded AI assistant, inspect how retrieval works, and deploy it as a live application — in 90 minutes.**
+This is the workshop. In about 90 minutes you build a grounded AI assistant, see how retrieval actually works, and deploy it to a public URL. It is one continuous pipeline with no framework in the way. A document is loaded and split into chunks, each chunk is embedded, a question is matched against them with cosine similarity, and the top matches are passed to an LLM that answers using only that context. Retrieval, scoring, and latency are all visible along the way.
 
-One continuous pipeline, no framework:
+## Files
 
-```
-PDF  ->  chunks  ->  embeddings  ->  cosine similarity  ->  top-k  ->  LLM answer  ->  sources + metrics  ->  Streamlit
-```
-
-No LangChain, no vector database, no Docker. Every line is readable.
-
-## What's here
-
-| File | Purpose |
-|------|---------|
-| `slides.pptx` | Presentation deck (bookends the session; ~13 slides) |
-| `../tutorial.ipynb` | The Colab notebook — workshop section on top, full deep-dive reference below |
-| `rag.py` | The reusable pipeline (the code you build in the notebook) |
-| `app.py` | Streamlit interface with the observability panel |
-| `requirements.txt` | Dependencies |
-| `.env.example` | Environment-variable template |
-| `.streamlit/secrets.toml.example` | Streamlit Cloud secrets template |
-| `sample_document.pdf` | Sample PDF used as the default document |
+`rag.py` is the pipeline, and it is the same code you build step by step in the notebook. `app.py` is the Streamlit interface, including the panel that shows how each answer was produced. `slides.pptx` is the deck for the session, with speaker notes. `sample_document.pdf` is the default document, a short fictional handbook, so everyone starts from the same place. `requirements.txt`, `.env.example`, and `.streamlit/secrets.toml.example` cover the dependencies and the API key. The notebook itself is one level up, at `../tutorial.ipynb`.
 
 ## The observability panel
 
-Every answer shows a **"How was this answer generated?"** panel:
+Every answer comes with a panel showing the chunks it retrieved, the similarity score for each one, and how long retrieval, generation, and the whole request took. The point is to make retrieval something you can inspect and debug rather than guess at.
 
-- the retrieved chunks (your sources),
-- the similarity score for each,
-- retrieval time, generation time, and total request time.
-
-That is what turns RAG from magic into something you can reason about.
-
-## Run it locally
+## Running it locally
 
 ```bash
 pip install -r requirements.txt
-export GEMINI_API_KEY=your_key_here    # free: https://aistudio.google.com/app/apikey
+export GEMINI_API_KEY=your_key_here    # free key: https://aistudio.google.com/app/apikey
 streamlit run app.py
 ```
 
-No key? Retrieval, scores, and latency still work; the answer becomes a labeled stub.
+If you do not set a key, retrieval and the metrics still work and the answer comes back as a labeled stub.
 
-## Deploy (browser only)
+## Deploying
 
-1. **Use this template** (or fork) to get your own copy of the repo.
-2. Go to https://share.streamlit.io → **New app** → select your repo.
-3. **Main file path:** `workshop/app.py`.
-4. **Advanced settings → Secrets:**
-   ```toml
-   GEMINI_API_KEY = "your_key_here"
-   ```
-5. **Deploy.** The first build installs PyTorch and downloads the embedding model — a few minutes is normal.
+Deployment is all in the browser. Use the repo as a template (or fork it) to get your own copy, then go to https://share.streamlit.io, create a new app, and point it at your repo with `workshop/app.py` as the main file. Add your Gemini key under Advanced settings as a secret:
 
-## Checkpoints
+```toml
+GEMINI_API_KEY = "your_key_here"
+```
 
-If you fall behind, each stage of the pipeline is a labeled step in the notebook
-(Steps 1–6). Jump to the next step rather than losing the rest of the session.
+Then deploy. The first build takes a few minutes because it installs PyTorch and downloads the embedding model, which is normal.
 
-## Configuration notes
+## If you fall behind
 
-- **Embedding model:** `all-MiniLM-L6-v2` (small, CPU-friendly).
-- **LLM:** Gemini (`gemini-2.5-flash`) via `google-genai`, bring-your-own-key.
-  Change `GEMINI_MODEL_NAME` in `rag.py` if the model name changes.
-- **Chunking:** 500-char chunks, 100-char overlap, top-3 retrieval — all adjustable
-  in the Streamlit sidebar.
+Each stage of the pipeline is a labeled step in the notebook (Steps 1 through 6), so you can jump to the next one instead of losing the rest of the session.
+
+## Configuration
+
+The embedding model is `all-MiniLM-L6-v2`, chosen because it is small and runs on CPU. The LLM is Gemini (`gemini-2.5-flash`) through `google-genai`, using your own key; if the model name changes, update `GEMINI_MODEL_NAME` in `rag.py`. Chunking defaults to 500-character chunks with 100 characters of overlap and returns the top 3 matches, and you can adjust all of these from the Streamlit sidebar.

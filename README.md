@@ -1,70 +1,39 @@
 # agents-rag-from-scratch
 
-A hands-on guide to Retrieval-Augmented Generation and agentic systems — from first principles through a deployed application.
+This repository holds two things, both built around a single notebook.
 
-This repository serves two audiences from one notebook:
+The first is a 90-minute workshop called Modern RAG in Practice. It walks through building a retrieval-augmented generation assistant from scratch and deploying it as a web app. You load a document, split it into chunks, embed those chunks, retrieve the most relevant ones with cosine similarity, and pass them to an LLM to get an answer that is grounded in the document and cites its sources. There is no LangChain, no vector database, and no Docker, so you can read every line and follow what is actually happening. The workshop lives at the top of `tutorial.ipynb`, and the code you deploy is in the `workshop/` folder. See `workshop/README.md` for how to run and deploy it.
 
-- **🎓 Workshop (90 minutes):** *Modern RAG in Practice* — build one clean RAG pipeline and deploy it as a live web app.
-- **📚 Deep dive (self-paced):** the full technical reference on agents, retrieval, evaluation, and guardrails.
+The second is a deep-dive reference, which is the rest of `tutorial.ipynb` below the workshop section. It is a much broader tour: agents, prompting, tools and MCP, memory, workflows and routing, the full retrieval stack (dense, sparse, and hybrid embeddings, and re-ranking), vector stores like FAISS and Chroma, knowledge graphs, evaluation metrics, and guardrails. It is meant for reading and experimenting at your own pace rather than following along live.
 
-## Two ways in
-
-### 1. The 90-minute workshop — *Modern RAG in Practice*
-
-Build a grounded assistant end to end and ship it:
-
-```
-PDF -> chunks -> embeddings -> cosine similarity -> top-k -> LLM answer -> sources + metrics -> Streamlit
-```
-
-- Start in [`tutorial.ipynb`](tutorial.ipynb) — the **workshop section is at the top**.
-- All deployable code is in [`workshop/`](workshop/) (`rag.py`, `app.py`, `requirements.txt`, sample document).
-- Deploy to a public URL with Streamlit Community Cloud — see [`workshop/README.md`](workshop/README.md).
-
-No LangChain, no vector database, no Docker. Every line is readable.
-
-### 2. The full technical deep dive
-
-The lower section of [`tutorial.ipynb`](tutorial.ipynb) is a comprehensive reference covering:
-
-- agents, prompting, tools, and the Model Context Protocol (MCP);
-- context engineering and memory systems;
-- workflows, chains, routing, and parallelization;
-- the full RAG stack: loading, chunking, dense/sparse/hybrid embeddings, re-ranking;
-- vector stores (FAISS, Chroma, HNSW) and knowledge graphs;
-- retrieval strategies, evaluation metrics, and guardrails.
-
-## Repository layout
-
-```
-agents-rag-from-scratch/
-├── tutorial.ipynb          # workshop (top) + deep-dive reference (below)
-├── workshop/
-│   ├── rag.py              # the reusable RAG pipeline
-│   ├── app.py              # Streamlit interface + observability panel
-│   ├── requirements.txt
-│   ├── .env.example
-│   ├── sample_document.pdf # fictional AI Society handbook
-│   └── README.md           # workshop + deployment guide
-├── LICENSE
-└── README.md
-```
-
-## Quick start (workshop)
+## Quick start
 
 ```bash
 cd workshop
 pip install -r requirements.txt
-export GEMINI_API_KEY=your_key_here   # free: https://aistudio.google.com/app/apikey
+export GEMINI_API_KEY=your_key_here   # free key: https://aistudio.google.com/app/apikey
 streamlit run app.py
 ```
 
-Or open `tutorial.ipynb` in Google Colab and run the workshop section top to bottom.
+You can also open `tutorial.ipynb` in Google Colab and run the workshop section from the top. A free Gemini key turns on answer generation; without one, retrieval and the metrics still work and answers come back as a labeled stub.
 
-## Scope
+## Layout
 
-This is an educational, transparent implementation — small and explicit rather than a production framework. Use it to understand how the pieces work, then extend them.
+```
+agents-rag-from-scratch/
+├── tutorial.ipynb          workshop section on top, deep-dive reference below
+├── workshop/
+│   ├── rag.py              the RAG pipeline
+│   ├── app.py              Streamlit interface with the observability panel
+│   ├── slides.pptx         the presentation deck
+│   ├── sample_document.pdf the default document
+│   ├── requirements.txt
+│   ├── .env.example
+│   └── README.md
+├── LICENSE
+└── README.md
+```
 
 ## License
 
-See [`LICENSE`](LICENSE).
+See `LICENSE`.
