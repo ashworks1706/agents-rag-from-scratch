@@ -14,7 +14,7 @@ from typing import Optional
 import numpy as np
 
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
-GEMINI_MODEL_NAME = "gemini-2.0-flash"
+GEMINI_MODEL_NAME = "gemini-2.5-flash"
 DEFAULT_CHUNK_SIZE = 500
 DEFAULT_CHUNK_OVERLAP = 100
 DEFAULT_TOP_K = 3

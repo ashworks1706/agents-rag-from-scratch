@@ -61,7 +61,7 @@ If you fall behind, each stage of the pipeline is a labeled step in the notebook
 ## Configuration notes
 
 - **Embedding model:** `all-MiniLM-L6-v2` (small, CPU-friendly).
-- **LLM:** Gemini (`gemini-2.0-flash`) via `google-genai`, bring-your-own-key.
+- **LLM:** Gemini (`gemini-2.5-flash`) via `google-genai`, bring-your-own-key.
   Change `GEMINI_MODEL_NAME` in `rag.py` if the model name changes.
 - **Chunking:** 500-char chunks, 100-char overlap, top-3 retrieval — all adjustable
   in the Streamlit sidebar.
