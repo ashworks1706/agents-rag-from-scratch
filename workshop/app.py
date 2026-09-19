@@ -1,14 +1,4 @@
-"""
-app.py — Streamlit interface for the Modern RAG in Practice workshop.
-
-Attendees do NOT write this file live; they read it and deploy it. It imports
-the exact pipeline they built in the notebook (rag.py) and wraps it in a UI
-with the observability panel: retrieved chunks, per-chunk similarity scores,
-and retrieval / generation / total latency.
-
-Run locally:   streamlit run app.py
-Deploy:        push to GitHub -> Streamlit Community Cloud -> point at workshop/app.py
-"""
+"""Streamlit interface for the RAG pipeline in rag.py."""
 
 import os
 import streamlit as st
@@ -17,25 +7,23 @@ import rag
 
 st.set_page_config(page_title="Modern RAG in Practice", page_icon="🔎", layout="centered")
 
-# --- Bridge Streamlit secrets -> env var so rag.py finds the key -------------
 if "GEMINI_API_KEY" in st.secrets and not os.environ.get("GEMINI_API_KEY"):
     os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
 
 DEFAULT_DOC = "sample_document.pdf"
 
 
-@st.cache_resource(show_spinner="Indexing the document (embeddings)...")
-def build_pipeline_from_pdf(path: str, chunk_size: int, overlap: int):
-    """Cached so the model + embeddings are computed once per container."""
+@st.cache_resource(show_spinner="Indexing the document...")
+def build_from_pdf(path, chunk_size, overlap):
     return rag.RagPipeline.from_pdf(path, chunk_size=chunk_size, overlap=overlap)
 
 
 @st.cache_resource(show_spinner="Indexing the uploaded document...")
-def build_pipeline_from_bytes(data: bytes, name: str, chunk_size: int, overlap: int):
-    tmp_path = os.path.join(st.session_state.get("_tmp_dir", "."), f"_uploaded_{name}")
-    with open(tmp_path, "wb") as f:
+def build_from_bytes(data, name, chunk_size, overlap):
+    tmp = f"_uploaded_{name}"
+    with open(tmp, "wb") as f:
         f.write(data)
-    return rag.RagPipeline.from_pdf(tmp_path, chunk_size=chunk_size, overlap=overlap)
+    return rag.RagPipeline.from_pdf(tmp, chunk_size=chunk_size, overlap=overlap)
 
 
 st.title("🔎 Modern RAG in Practice")
@@ -48,27 +36,23 @@ with st.sidebar:
     overlap = st.slider("Chunk overlap (chars)", 0, 300, rag.DEFAULT_CHUNK_OVERLAP, step=25)
 
     st.divider()
-    st.subheader("Document")
-    st.write("Default: **AI Society Handbook** (sample).")
-    uploaded = st.file_uploader("Or upload your own PDF (extension)", type=["pdf"])
+    uploaded = st.file_uploader("Upload a PDF (optional)", type=["pdf"])
 
     st.divider()
     if os.environ.get("GEMINI_API_KEY"):
         st.success("Gemini key detected — answers are generated.")
     else:
-        st.warning("No Gemini key — retrieval works; answer is a stub. "
-                   "Add GEMINI_API_KEY in Settings → Secrets.")
+        st.warning("No Gemini key — retrieval works; answer is a stub. Add GEMINI_API_KEY in Settings → Secrets.")
 
-# Build (or rebuild) the pipeline for the chosen document + settings.
 if uploaded is not None:
-    pipe = build_pipeline_from_bytes(uploaded.getvalue(), uploaded.name, chunk_size, overlap)
+    pipe = build_from_bytes(uploaded.getvalue(), uploaded.name, chunk_size, overlap)
     doc_label = uploaded.name
 else:
     if not os.path.exists(DEFAULT_DOC):
-        st.error(f"Sample document '{DEFAULT_DOC}' not found next to app.py.")
+        st.error(f"'{DEFAULT_DOC}' not found next to app.py.")
         st.stop()
-    pipe = build_pipeline_from_pdf(DEFAULT_DOC, chunk_size, overlap)
-    doc_label = "AI Society Handbook (sample)"
+    pipe = build_from_pdf(DEFAULT_DOC, chunk_size, overlap)
+    doc_label = "sample document"
 
 st.info(f"Indexed **{len(pipe.chunks)}** chunks from *{doc_label}*.")
 
@@ -81,7 +65,6 @@ if ask and question.strip():
 
     st.subheader("Answer")
     st.write(result.answer)
-
     for w in result.warnings:
         st.caption(f"⚠️ {w}")
 
@@ -98,6 +81,5 @@ if ask and question.strip():
             st.progress(max(0.0, min(1.0, chunk.score)))
             st.write(chunk.text)
             st.divider()
-
 elif ask:
     st.warning("Type a question first.")

@@ -45,7 +45,6 @@ agents-rag-from-scratch/
 │   ├── requirements.txt
 │   ├── .env.example
 │   ├── sample_document.pdf # fictional AI Society handbook
-│   ├── make_sample_doc.py
 │   └── README.md           # workshop + deployment guide
 ├── LICENSE
 └── README.md

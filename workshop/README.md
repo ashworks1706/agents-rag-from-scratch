@@ -20,8 +20,7 @@ No LangChain, no vector database, no Docker. Every line is readable.
 | `requirements.txt` | Dependencies |
 | `.env.example` | Environment-variable template |
 | `.streamlit/secrets.toml.example` | Streamlit Cloud secrets template |
-| `sample_document.pdf` | A fictional AI Society handbook (safe to redistribute) |
-| `make_sample_doc.py` | Regenerates the sample PDF |
+| `sample_document.pdf` | Sample PDF used as the default document |
 
 ## The observability panel
 
