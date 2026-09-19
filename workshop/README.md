@@ -14,6 +14,7 @@ No LangChain, no vector database, no Docker. Every line is readable.
 
 | File | Purpose |
 |------|---------|
+| `slides.pptx` | Presentation deck (bookends the session; ~13 slides) |
 | `../tutorial.ipynb` | The Colab notebook — workshop section on top, full deep-dive reference below |
 | `rag.py` | The reusable pipeline (the code you build in the notebook) |
 | `app.py` | Streamlit interface with the observability panel |
