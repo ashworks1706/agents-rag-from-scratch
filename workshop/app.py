@@ -7,8 +7,13 @@ import rag
 
 st.set_page_config(page_title="Modern RAG in Practice", page_icon="🔎", layout="centered")
 
-if "GEMINI_API_KEY" in st.secrets and not os.environ.get("GEMINI_API_KEY"):
-    os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
+try:
+    # On Streamlit Cloud the key comes from Secrets; locally it comes from the environment.
+    # With no secrets.toml, st.secrets raises, so fall back to the environment variable.
+    if "GEMINI_API_KEY" in st.secrets and not os.environ.get("GEMINI_API_KEY"):
+        os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
+except Exception:
+    pass
 
 DEFAULT_DOC = "sample_document.pdf"
 
