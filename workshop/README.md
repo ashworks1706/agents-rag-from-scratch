@@ -12,6 +12,8 @@ Every answer comes with a panel showing the chunks it retrieved, the similarity 
 
 ## Running it locally
 
+You need Python 3.12 (3.10 or newer works) installed and on your PATH. A fresh virtual environment is recommended.
+
 ```bash
 pip install -r requirements.txt
 export GEMINI_API_KEY=your_key_here    # free key: https://aistudio.google.com/app/apikey
@@ -19,6 +21,8 @@ streamlit run app.py
 ```
 
 If you do not set a key, retrieval and the metrics still work and the answer comes back as a labeled stub.
+
+On first run Streamlit asks for an email address; press Enter to skip it. If you see a `torchvision` traceback in the terminal, it is harmless and does not affect the app; `streamlit run app.py --server.fileWatcherType none` silences it.
 
 ## Deploying
 
@@ -36,4 +40,4 @@ Each stage of the pipeline is a labeled step in the notebook (Steps 1 through 6)
 
 ## Configuration
 
-The embedding model is `all-MiniLM-L6-v2`, chosen because it is small and runs on CPU. The LLM is Gemini (`gemini-2.5-flash`) through `google-genai`, using your own key; if the model name changes, update `GEMINI_MODEL_NAME` in `rag.py`. Chunking defaults to 500-character chunks with 100 characters of overlap and returns the top 3 matches, and you can adjust all of these from the Streamlit sidebar.
+The embedding model is `all-MiniLM-L6-v2`, chosen because it is small and runs on CPU. The LLM is Gemini (`gemini-3.6-flash`) through `google-genai`, using your own key; if the model name changes, update `GEMINI_MODEL_NAME` in `rag.py`. Chunking defaults to 500-character chunks with 100 characters of overlap and returns the top 3 matches, and you can adjust all of these from the Streamlit sidebar.

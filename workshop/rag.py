@@ -14,7 +14,7 @@ from typing import Optional
 import numpy as np
 
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
-GEMINI_MODEL_NAME = "gemini-2.5-flash"
+GEMINI_MODEL_NAME = "gemini-3.6-flash"
 DEFAULT_CHUNK_SIZE = 500
 DEFAULT_CHUNK_OVERLAP = 100
 DEFAULT_TOP_K = 3
@@ -92,10 +92,10 @@ Question: {question}
 Answer:"""
 
 
-def _stub_answer(chunks: list[RetrievedChunk]) -> str:
+def _stub_answer(chunks: list[RetrievedChunk], reason: str = "No GEMINI_API_KEY set") -> str:
     top = chunks[0].text if chunks else "(no chunks retrieved)"
     return (
-        "[No GEMINI_API_KEY set — showing retrieval only, no generated answer.]\n\n"
+        f"[{reason} — showing retrieval only, no generated answer.]\n\n"
         f"Most relevant passage:\n\n\"{top[:300]}...\""
     )
 
@@ -112,7 +112,7 @@ def generate_answer(question: str, chunks: list[RetrievedChunk]) -> tuple[str, b
         resp = client.models.generate_content(model=GEMINI_MODEL_NAME, contents=prompt)
         return (resp.text or "").strip(), True, None
     except Exception as exc:
-        return _stub_answer(chunks), False, f"Generation failed ({exc.__class__.__name__}): {exc}"
+        return _stub_answer(chunks, "Generation failed, see the warning below"), False, f"Generation failed ({exc.__class__.__name__}): {exc}"
 
 
 class RagPipeline:
