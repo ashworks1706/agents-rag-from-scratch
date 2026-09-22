@@ -41,3 +41,42 @@ Each stage of the pipeline is a labeled step in the notebook (Steps 1 through 6)
 ## Configuration
 
 The pipeline uses LangChain: `PyMuPDFLoader` and `RecursiveCharacterTextSplitter` for loading and chunking, `langchain-huggingface` with the `all-MiniLM-L6-v2` embedding model (small, CPU-friendly), and a FAISS vector store for retrieval. The LLM is Gemini (`gemini-3.6-flash`) through `langchain-google-genai`, using your own key; if the model name changes, update `GEMINI_MODEL_NAME` in `rag.py`. Chunking defaults to 500-character chunks with 100 characters of overlap and returns the top 3 matches, and you can adjust all of these from the Streamlit sidebar.
+
+## Modular pipeline (experiment here)
+
+Alongside the deployable app, the workshop is broken into one folder per RAG stage, with one file per method, so you can read, run, or swap any single piece:
+
+```
+workshop/
+  splitting/    character, recursive, token_based, markdown_header, html_header, code_language, latex, sentence_nltk, spacy_nlp
+  embedding/    dense, sparse_bm25, hybrid
+  indexing/     numpy_flat, faiss_index, hnsw_index, chroma_index, lsh_index
+  searching/    semantic_topk, bm25_search, hybrid_search, query_fusion, reciprocal_rank_fusion, ensemble, router
+  reranking/    cross_encoder
+  main.py       chains one method from each stage end to end
+```
+
+Every file runs on its own, so you can see exactly what one method does:
+
+```bash
+pip install -r requirements-modular.txt
+python splitting/recursive.py
+python indexing/faiss_index.py
+python searching/reciprocal_rank_fusion.py
+```
+
+`main.py` composes one method per stage (splitting, embedding, indexing, searching, reranking). To try a different method, change one import at the top of `main.py` and run it:
+
+```bash
+python main.py "How much does membership cost?"
+```
+
+The pieces share simple conventions so they fit together:
+
+- splitting: `split(text, ...) -> list[str]`
+- embedding: `DenseEmbedder().embed(texts) -> vectors` (normalised)
+- indexing: `Index(vectors).query(query_vector, k) -> [(chunk_index, score)]`
+- searching: `Search(chunks).search(query, k) -> [(chunk, score)]`
+- reranking: `Reranker().rerank(query, chunks, k) -> [(chunk, score)]`
+
+Notes: the deployed Streamlit app (`app.py`, `rag.py`) is separate and stays light, needing only `requirements.txt`. Some methods fetch a resource on first use: `token_based.py` downloads the tiktoken vocab, `sentence_nltk.py` downloads the NLTK sentence model, and the embedding and cross-encoder methods download their model from Hugging Face.
