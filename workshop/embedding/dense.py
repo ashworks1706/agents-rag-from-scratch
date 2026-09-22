@@ -1,10 +1,4 @@
-"""Dense embeddings with Sentence Transformers (all-MiniLM-L6-v2).
-
-Turns text into a fixed-size vector where similar meanings are close together.
-Vectors are L2-normalised, so a dot product equals cosine similarity.
-
-pip install sentence-transformers
-"""
+"""Dense embeddings with Sentence Transformers (all-MiniLM-L6-v2): text becomes a fixed-size vector, L2-normalised so a dot product equals cosine similarity."""
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
@@ -23,10 +17,3 @@ class DenseEmbedder:
 
     def embed_query(self, text):
         return self.embed([text])[0]
-
-
-if __name__ == "__main__":
-    emb = DenseEmbedder()
-    v = emb.embed(["membership dues", "workshop schedule"])
-    print("shape:", v.shape)
-    print("self-similarity:", float(v[0] @ v[0]))

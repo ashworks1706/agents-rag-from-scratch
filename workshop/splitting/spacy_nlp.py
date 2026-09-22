@@ -1,10 +1,4 @@
-"""Sentence splitting with spaCy: group sentences using a spaCy model.
-
-Similar to the NLTK splitter but uses spaCy's sentence segmentation, which can
-be more accurate on messy text.
-
-pip install spacy   (the blank English pipeline used here needs no download)
-"""
+"""Sentence splitting with spaCy: segment sentences with a blank English pipeline, then pack them up to chunk_size."""
 import spacy
 
 
@@ -28,10 +22,3 @@ def split(text, chunk_size=300):
     if current:
         chunks.append(current.strip())
     return chunks
-
-
-if __name__ == "__main__":
-    sample = ("Membership costs 15 dollars. Workshops run on Tuesday. "
-              "Elections happen once a year. Dues can be waived for volunteers.")
-    for i, c in enumerate(split(sample, chunk_size=60)):
-        print(i, repr(c))

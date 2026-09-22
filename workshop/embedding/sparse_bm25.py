@@ -1,10 +1,4 @@
-"""Sparse BM25 representation: keyword scoring, no neural model.
-
-BM25 ranks documents by how often the query's words appear in them, adjusted
-for document length. It captures exact terms that dense embeddings can miss.
-
-pip install rank-bm25
-"""
+"""Sparse BM25: keyword scoring with no neural model. Ranks documents by how often the query's words appear, adjusted for length."""
 from rank_bm25 import BM25Okapi
 
 
@@ -21,12 +15,3 @@ class BM25Model:
         scores = self.scores(query)
         order = sorted(range(len(scores)), key=lambda i: -scores[i])[:k]
         return [(i, float(scores[i])) for i in order]
-
-
-if __name__ == "__main__":
-    corpus = ["membership costs 15 dollars per semester",
-              "workshops run every tuesday",
-              "officer elections happen once a year"]
-    m = BM25Model(corpus)
-    for i, s in m.top_k("membership cost", k=3):
-        print(f"{s:.3f}", corpus[i])

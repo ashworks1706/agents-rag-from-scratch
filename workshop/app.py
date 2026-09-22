@@ -1,90 +1,147 @@
-"""Streamlit interface for the RAG pipeline in rag.py."""
+"""Streamlit app for the Modern RAG workshop.
+
+Two tabs, both driven by the method files in splitting/ embedding/ indexing/
+searching/ reranking/:
+  Ask   - ask a question, see the grounded answer, sources, scores, and latency.
+  Race  - pick a strategy and score it on the gold question set (Recall@k, MRR).
+"""
 
 import os
+import sys
+import time
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import streamlit as st
 
+from utils import load_pdf
+from utils.dispatch import get_chunks, build_search
+from utils.benchmark import load_gold, score
 import rag
+
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DOC = os.path.join(APP_DIR, "sample_document.pdf")
+GOLD = os.path.join(APP_DIR, "benchmark", "gold.json")
 
 st.set_page_config(page_title="Modern RAG in Practice", page_icon="🔎", layout="centered")
 
 try:
-    # On Streamlit Cloud the key comes from Secrets; locally it comes from the environment.
-    # With no secrets.toml, st.secrets raises, so fall back to the environment variable.
     if "GEMINI_API_KEY" in st.secrets and not os.environ.get("GEMINI_API_KEY"):
         os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
 except Exception:
     pass
 
-DEFAULT_DOC = "sample_document.pdf"
-
 
 @st.cache_resource(show_spinner="Indexing the document...")
-def build_from_pdf(path, chunk_size, overlap):
-    return rag.RagPipeline.from_pdf(path, chunk_size=chunk_size, overlap=overlap)
+def build(doc_path, splitter, chunk_size, overlap, search):
+    text = load_pdf(doc_path)
+    chunks = get_chunks(splitter, text, chunk_size, overlap)
+    searcher = build_search(search, chunks)
+    return chunks, searcher
 
 
-@st.cache_resource(show_spinner="Indexing the uploaded document...")
-def build_from_bytes(data, name, chunk_size, overlap):
-    tmp = f"_uploaded_{name}"
-    with open(tmp, "wb") as f:
-        f.write(data)
-    return rag.RagPipeline.from_pdf(tmp, chunk_size=chunk_size, overlap=overlap)
+@st.cache_resource(show_spinner="Loading reranker...")
+def get_reranker():
+    from reranking.cross_encoder import Reranker
+    return Reranker()
+
+
+def retrieve_scored(searcher, query, k, rerank, pool=20):
+    """Return [(chunk, score)] for the top k, optionally reranked."""
+    results = searcher.search(query, k=(pool if rerank else k))
+    if isinstance(results, tuple):  # router returns (choice, results)
+        results = results[1]
+    if rerank:
+        candidates = [c for c, _ in results]
+        return get_reranker().rerank(query, candidates, k=k)
+    return results
 
 
 st.title("🔎 Modern RAG in Practice")
-st.caption("Ask a question about the document. Every answer shows its sources, scores, and latency.")
 
 with st.sidebar:
-    st.header("Settings")
-    top_k = st.slider("Chunks to retrieve (top-k)", 1, 8, rag.DEFAULT_TOP_K)
-    chunk_size = st.slider("Chunk size (chars)", 200, 1200, rag.DEFAULT_CHUNK_SIZE, step=50)
-    overlap = st.slider("Chunk overlap (chars)", 0, 300, rag.DEFAULT_CHUNK_OVERLAP, step=25)
+    st.header("Pipeline")
+    splitter = st.selectbox("Splitter", ["recursive", "character", "token_based", "sentence_nltk"])
+    chunk_size = st.slider("Chunk size", 100, 1000, 500, step=50)
+    overlap = st.slider("Overlap", 0, 300, 100, step=25)
+    search = st.selectbox("Search", ["semantic", "bm25", "hybrid", "query_fusion", "rrf", "ensemble", "router"])
+    rerank = st.checkbox("Cross-encoder rerank")
+    k = st.slider("Top-k", 1, 8, 3)
 
     st.divider()
-    uploaded = st.file_uploader("Upload a PDF (optional)", type=["pdf"])
-
-    st.divider()
+    uploaded = st.file_uploader("Document (optional PDF)", type=["pdf"])
     if os.environ.get("GEMINI_API_KEY"):
-        st.success("Gemini key detected — answers are generated.")
+        st.success("Gemini key detected.")
     else:
-        st.warning("No Gemini key — retrieval works; answer is a stub. Add GEMINI_API_KEY in Settings → Secrets.")
+        st.warning("No Gemini key: retrieval and scores work; answers are stubs.")
 
+doc_path = DEFAULT_DOC
 if uploaded is not None:
-    pipe = build_from_bytes(uploaded.getvalue(), uploaded.name, chunk_size, overlap)
-    doc_label = uploaded.name
-else:
-    if not os.path.exists(DEFAULT_DOC):
-        st.error(f"'{DEFAULT_DOC}' not found next to app.py.")
-        st.stop()
-    pipe = build_from_pdf(DEFAULT_DOC, chunk_size, overlap)
-    doc_label = "sample document"
+    doc_path = os.path.join(APP_DIR, f"_uploaded_{uploaded.name}")
+    with open(doc_path, "wb") as fh:
+        fh.write(uploaded.getvalue())
 
-st.info(f"Indexed **{len(pipe.chunks)}** chunks from *{doc_label}*.")
+chunks, searcher = build(doc_path, splitter, chunk_size, overlap, search)
+st.caption(f"{len(chunks)} chunks · splitter={splitter} · search={search}"
+           + (" · rerank" if rerank else "") + f" · k={k}")
 
-question = st.text_input("Your question", placeholder="e.g. How much does membership cost?")
-ask = st.button("Ask", type="primary")
+tab_ask, tab_race = st.tabs(["Ask", "Race"])
 
-if ask and question.strip():
-    with st.spinner("Retrieving and generating..."):
-        result = pipe.answer(question, k=top_k)
+with tab_ask:
+    question = st.text_input("Your question", placeholder="e.g. How much does membership cost?")
+    if st.button("Ask", type="primary") and question.strip():
+        t0 = time.perf_counter()
+        scored = retrieve_scored(searcher, question, k, rerank)
+        t1 = time.perf_counter()
+        rc = [rag.RetrievedChunk(text=c, score=s, index=i) for i, (c, s) in enumerate(scored)]
+        answer, used_llm, warning = rag.generate_answer(question, rc)
+        t2 = time.perf_counter()
 
-    st.subheader("Answer")
-    st.write(result.answer)
-    for w in result.warnings:
-        st.caption(f"⚠️ {w}")
+        st.subheader("Answer")
+        st.write(answer)
+        if warning:
+            st.caption(f"⚠️ {warning}")
 
-    with st.expander("How was this answer generated?", expanded=True):
+        with st.expander("How was this answer generated?", expanded=True):
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Retrieval", f"{(t1 - t0) * 1000:.0f} ms")
+            c2.metric("Generation", f"{(t2 - t1) * 1000:.0f} ms")
+            c3.metric("Total", f"{(t2 - t0) * 1000:.0f} ms")
+            st.caption(f"LLM used: {'yes' if used_llm else 'no (stub answer)'}")
+            for rank, (chunk, s) in enumerate(scored, start=1):
+                st.markdown(f"**Source {rank}** · similarity `{s:.3f}`")
+                st.progress(max(0.0, min(1.0, float(s))))
+                st.write(chunk)
+                st.divider()
+
+with tab_race:
+    st.write("Score the current pipeline on the gold question set. "
+             "Tune the sidebar to climb the leaderboard; keep **k** fixed for the room.")
+    if st.button("Run benchmark", type="primary"):
+        gold = load_gold(GOLD)
+        with st.spinner(f"Scoring {len(gold)} questions..."):
+            def retrieve_fn(q):
+                return [c for c, _ in retrieve_scored(searcher, q, k, rerank)]
+
+            generate_fn = None
+            if os.environ.get("GEMINI_API_KEY"):
+                def generate_fn(q, top):
+                    rc = [rag.RetrievedChunk(text=c, score=0.0, index=i) for i, c in enumerate(top)]
+                    return rag.generate_answer(q, rc)[0]
+
+            result = score(gold, retrieve_fn, generate_fn)
+
         c1, c2, c3 = st.columns(3)
-        c1.metric("Retrieval", f"{result.retrieval_ms:.0f} ms")
-        c2.metric("Generation", f"{result.generation_ms:.0f} ms")
-        c3.metric("Total", f"{result.total_ms:.0f} ms")
-        st.caption(f"LLM used: {'yes' if result.used_llm else 'no (stub answer)'}")
+        c1.metric(f"Recall@{k}", f"{result['recall']:.3f}", f"{result['hits']}/{result['n']}")
+        c2.metric("MRR", f"{result['mrr']:.3f}")
+        if result["answer_rate"] is not None:
+            c3.metric(f"Answer@{k}", f"{result['answer_rate']:.3f}")
+        else:
+            c3.caption("Answer@k needs a Gemini key")
 
-        st.markdown("**Retrieved chunks (sources)**")
-        for rank, chunk in enumerate(result.chunks, start=1):
-            st.markdown(f"**Source {rank}** · chunk #{chunk.index} · similarity `{chunk.score:.3f}`")
-            st.progress(max(0.0, min(1.0, chunk.score)))
-            st.write(chunk.text)
-            st.divider()
-elif ask:
-    st.warning("Type a question first.")
+        label = f"{splitter}/{search}" + ("+rerank" if rerank else "")
+        line = f"{label:<24} Recall@{k}={result['recall']:.3f}  MRR={result['mrr']:.3f}"
+        if result["answer_rate"] is not None:
+            line += f"  Answer@{k}={result['answer_rate']:.3f}"
+        st.caption("Copy your best line into the shared leaderboard:")
+        st.code(line, language="text")
