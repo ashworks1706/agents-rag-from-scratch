@@ -53,8 +53,11 @@ workshop/
   indexing/     numpy_flat, faiss_index, hnsw_index, chroma_index, lsh_index
   searching/    semantic_topk, bm25_search, hybrid_search, query_fusion, reciprocal_rank_fusion, ensemble, router
   reranking/    cross_encoder
-  main.py       chains one method from each stage end to end
+  utils/        shared helpers (load_pdf, printing, name dispatch)
+  main.py       the pipeline, one line per stage
 ```
+
+`main.py` is deliberately just the five steps in order; the plumbing lives in `utils/`, so the core files stay easy to read.
 
 Every file runs on its own, so you can see exactly what one method does:
 

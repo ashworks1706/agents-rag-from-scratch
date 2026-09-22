@@ -10,8 +10,8 @@ Metrics:
   Answer@k   (with --llm) fraction of questions the LLM answers with the gold phrase
 
 Examples:
-  python benchmark/evaluate.py --search semantic --splitter recursive --chunk-size 500 --overlap 100 --k 5
-  python benchmark/evaluate.py --search hybrid --splitter recursive --rerank --k 5 --name "Ada"
+  python benchmark/evaluate.py --search semantic --splitter recursive --chunk-size 500 --overlap 100
+  python benchmark/evaluate.py --search hybrid --rerank --name "Ada"
   python benchmark/evaluate.py --search rrf --llm --name "Team Bass"
 """
 
@@ -24,65 +24,15 @@ import sys
 WORKSHOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, WORKSHOP)
 
+from utils import load_pdf
+from utils.dispatch import get_chunks, build_search, retrieve
+
 DOC = os.path.join(WORKSHOP, "sample_document.pdf")
 GOLD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gold.json")
 
 
 def norm(s):
     return re.sub(r"\s+", " ", s).strip().lower()
-
-
-def load_text(path):
-    import pymupdf
-    doc = pymupdf.open(path)
-    text = "\n".join(page.get_text() for page in doc)
-    doc.close()
-    return text
-
-
-def get_chunks(splitter, text, chunk_size, overlap):
-    """Dispatch to a splitting module. Size/overlap apply where the method supports them."""
-    if splitter in ("recursive", "character", "token_based"):
-        mod = __import__(f"splitting.{splitter}", fromlist=["split"])
-        return mod.split(text, chunk_size=chunk_size, overlap=overlap)
-    if splitter in ("sentence_nltk", "spacy_nlp"):
-        mod = __import__(f"splitting.{splitter}", fromlist=["split"])
-        return mod.split(text, chunk_size=chunk_size)
-    # header/code/latex splitters expect structured input; fall back to plain split
-    mod = __import__(f"splitting.{splitter}", fromlist=["split"])
-    return mod.split(text)
-
-
-def build_search(search, chunks):
-    if search == "semantic":
-        from searching.semantic_topk import SemanticSearch
-        return SemanticSearch(chunks)
-    if search == "bm25":
-        from searching.bm25_search import BM25Search
-        return BM25Search(chunks)
-    if search == "hybrid":
-        from searching.hybrid_search import HybridSearch
-        return HybridSearch(chunks)
-    if search == "query_fusion":
-        from searching.query_fusion import QueryFusionSearch
-        return QueryFusionSearch(chunks)
-    if search == "rrf":
-        from searching.reciprocal_rank_fusion import RRFSearch
-        return RRFSearch(chunks)
-    if search == "ensemble":
-        from searching.ensemble import EnsembleSearch
-        return EnsembleSearch(chunks)
-    if search == "router":
-        from searching.router import RouterSearch
-        return RouterSearch(chunks)
-    raise ValueError(f"unknown search method: {search}")
-
-
-def retrieve(searcher, query, k):
-    results = searcher.search(query, k=k)
-    if isinstance(results, tuple):  # router returns (choice, results)
-        results = results[1]
-    return [chunk for chunk, _score in results]
 
 
 def main():
@@ -99,7 +49,7 @@ def main():
     args = ap.parse_args()
 
     gold = json.load(open(GOLD))["questions"]
-    text = load_text(DOC)
+    text = load_pdf(DOC)
     chunks = get_chunks(args.splitter, text, args.chunk_size, args.overlap)
     searcher = build_search(args.search, chunks)
 
