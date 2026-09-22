@@ -1,29 +1,27 @@
-# Retrieval race
+# The race
 
-A short competition: everyone scores the same questions against the same
-document and tries to get the highest retrieval score by choosing a better
-splitting and searching strategy.
+Everyone scores the same 27 questions on the same document. Best retrieval score
+wins.
 
-Run it from the **Race** tab in the app (`streamlit run app.py`). Edit
-`pipeline.py` to set your strategy, click **Run benchmark**, and read the score.
+## How to play
 
-- `gold.json` — 27 questions over the sample handbook, each with a short gold
-  answer phrase.
-- `leaderboard.md` — paste your best result here.
+1. Edit `pipeline.py` to pick your strategy (splitter, search method, chunk
+   size, reranking).
+2. Open the **Race** tab in the app and click **Run benchmark**.
+3. Read your score and paste your best line into `leaderboard.md`.
 
-## Rules
+Keep `TOP_K` the same as everyone else. Change anything else.
 
-- The document and questions are fixed and the same for everyone.
-- `k` is fixed for the room; you do not change it.
-- You tune the splitter, chunk size and overlap, the search method, and whether
-  you rerank, all in `pipeline.py`.
-- A question is a hit when the gold answer phrase appears in one of your top-k
-  chunks, so different chunking is scored fairly.
+## The scores
 
-## Metrics
+- **Recall@k** — was the answer in your top results? This is the one to beat.
+- **MRR** — how high did you rank the right chunk? (tiebreaker)
+- **Answer@k** — did the AI answer correctly? (needs a Gemini key)
 
-- **Recall@k** — the headline: fraction of questions whose answer was in your
-  top-k chunks.
-- **MRR** — the tiebreaker: rewards ranking the right chunk first.
-- **Answer@k** — optional, needs a Gemini key: the LLM answers from your top-k
-  chunks and it counts if the gold phrase is in the answer.
+A question counts as correct if the answer text shows up in one of your top
+chunks, so different chunk sizes are compared fairly.
+
+## Files
+
+- `gold.json` — the 27 questions and their answers.
+- `leaderboard.md` — put your best result here.

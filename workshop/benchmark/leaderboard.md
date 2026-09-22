@@ -1,7 +1,7 @@
 # Leaderboard
 
-Paste your best `LEADERBOARD` line here. Sort by Recall@k, then MRR.
+Paste your best line from the Race tab. Highest Recall wins; MRR breaks ties.
 
-| Name / strategy | Splitter (size/overlap) | Search | Rerank | Recall@k | MRR | Answer@k |
-|-----------------|-------------------------|--------|--------|----------|-----|----------|
-| example: recursive/hybrid | recursive (400/80) | hybrid | yes | 0.000 | 0.000 | - |
+| Name | Strategy | Recall@k | MRR | Answer@k |
+|------|----------|----------|-----|----------|
+| example | recursive / hybrid + rerank | 0.00 | 0.00 | - |
