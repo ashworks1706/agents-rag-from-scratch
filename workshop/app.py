@@ -123,6 +123,12 @@ if uploaded is not None:
 chunks, searcher = build_doc(doc_path, pipeline_sig())
 
 st.title("Modern RAG in Practice")
+st.caption(
+    f"pipeline —  split: {pipeline.split.__module__.split('.')[-1]}  ·  "
+    f"search: {pipeline.Search.__module__.split('.')[-1]}  ·  "
+    f"chunk: {pipeline.CHUNK_SIZE}/{pipeline.OVERLAP}  ·  "
+    f"top_k: {pipeline.TOP_K}  ·  rerank: {'on' if pipeline.USE_RERANKER else 'off'}"
+)
 tab_ask, tab_race, tab_index = st.tabs(["Ask", "Race", "Index"])
 
 with tab_ask:
@@ -133,20 +139,22 @@ with tab_ask:
         scored = retrieve_scored(searcher, question)
         t1 = time.perf_counter()
         rc = [rag.RetrievedChunk(text=c, score=s, index=i) for i, (c, s) in enumerate(scored)]
-        answer, used_llm, warning = rag.generate_answer(question, rc)
-        t2 = time.perf_counter()
+        used_llm = bool(os.environ.get("GEMINI_API_KEY"))
 
         st.subheader("Answer")
-        st.write(answer)
-        if warning:
-            st.caption(warning)
+        st.write_stream(rag.stream_answer(question, rc))
+        t2 = time.perf_counter()
 
-        with st.expander("How was this answer generated?", expanded=True):
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Retrieval", f"{(t1 - t0) * 1000:.0f} ms")
-            c2.metric("Generation", f"{(t2 - t1) * 1000:.0f} ms")
-            c3.metric("Total", f"{(t2 - t0) * 1000:.0f} ms")
-            st.caption(f"LLM used: {'yes' if used_llm else 'no (stub answer)'}")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Retrieval", f"{(t1 - t0) * 1000:.0f} ms")
+        c2.metric("Generation", f"{(t2 - t1) * 1000:.0f} ms")
+        c3.metric("Total", f"{(t2 - t0) * 1000:.0f} ms")
+        st.caption(f"LLM used: {'yes' if used_llm else 'no (stub answer)'}")
+
+        with st.expander("Final prompt sent to the LLM"):
+            st.code(rag.build_prompt(question, rc), language="text")
+
+        with st.expander("Sources", expanded=True):
             for rank, (chunk, s) in enumerate(scored, start=1):
                 st.markdown(f"**Source {rank}** · similarity `{s:.3f}`")
                 st.progress(max(0.0, min(1.0, float(s))))
