@@ -84,3 +84,6 @@ get a public link. The first build takes a few minutes.
   answers (change `GEMINI_MODEL_NAME` in `rag.py` if needed).
 - Some methods in the folders need extra packages (FAISS, spaCy, ...); see
   `requirements-modular.txt`.
+- To collect feedback and scores, set `FEEDBACK_FORM_URL` in `app.py` to your
+  Google Form link; a **Submit feedback & scores** button then appears after the
+  race results and in the sidebar.

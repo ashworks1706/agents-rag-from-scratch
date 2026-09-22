@@ -27,6 +27,9 @@ DEFAULT_DOC = os.path.join(APP_DIR, "sample_document.pdf")
 CORPUS = os.path.join(APP_DIR, "benchmark", "corpus.txt")
 GOLD = os.path.join(APP_DIR, "benchmark", "gold.json")
 
+# Paste your Google Form link here to show a "Submit feedback & scores" button.
+FEEDBACK_FORM_URL = ""
+
 st.set_page_config(page_title="Modern RAG in Practice", page_icon="🔎", layout="centered")
 
 try:
@@ -87,6 +90,9 @@ with st.sidebar:
         st.success("Gemini key detected.")
     else:
         st.warning("No Gemini key: retrieval and scores work; answers are stubs.")
+    if FEEDBACK_FORM_URL:
+        st.divider()
+        st.link_button("📋 Feedback & scores", FEEDBACK_FORM_URL)
 
 tab_ask, tab_race = st.tabs(["Ask", "Race"])
 
@@ -160,3 +166,8 @@ with tab_race:
             line += f"  Answer@{pipeline.TOP_K}={result['answer_rate']:.3f}"
         st.caption("Copy your best line into benchmark/leaderboard.md:")
         st.code(line, language="text")
+
+        if FEEDBACK_FORM_URL:
+            st.link_button("📋 Submit your feedback & scores", FEEDBACK_FORM_URL, type="primary")
+        else:
+            st.caption("Tip: set FEEDBACK_FORM_URL in app.py to add a feedback button here.")
