@@ -1,0 +1,140 @@
+{
+  "document": "sample_document.pdf",
+  "questions": [
+    {
+      "id": 1,
+      "question": "How much does membership cost?",
+      "answer": "15 dollars per semester"
+    },
+    {
+      "id": 2,
+      "question": "What does standard membership include access to?",
+      "answer": "members-only Discord server"
+    },
+    {
+      "id": 3,
+      "question": "When are membership dues waived?",
+      "answer": "at least three sessions"
+    },
+    {
+      "id": 4,
+      "question": "Do members have to re-register each term?",
+      "answer": "fall and spring terms"
+    },
+    {
+      "id": 5,
+      "question": "When do workshops run?",
+      "answer": "every Tuesday from 6 to 8 PM"
+    },
+    {
+      "id": 6,
+      "question": "Where are the workshops held?",
+      "answer": "room 210"
+    },
+    {
+      "id": 7,
+      "question": "Can I attend a workshop without having attended previous ones?",
+      "answer": "self-contained"
+    },
+    {
+      "id": 8,
+      "question": "What topics do the workshops cover?",
+      "answer": "machine learning fundamentals"
+    },
+    {
+      "id": 9,
+      "question": "How soon are workshop recordings posted?",
+      "answer": "within 48 hours"
+    },
+    {
+      "id": 10,
+      "question": "How many members are on a project team?",
+      "answer": "three to five members"
+    },
+    {
+      "id": 11,
+      "question": "How often do project teams meet?",
+      "answer": "Teams meet weekly"
+    },
+    {
+      "id": 12,
+      "question": "What do project teams present at the end of the semester?",
+      "answer": "end-of-semester showcase"
+    },
+    {
+      "id": 13,
+      "question": "What do you receive for completing the project track?",
+      "answer": "receive a certificate"
+    },
+    {
+      "id": 14,
+      "question": "What are project track graduates eligible to apply for?",
+      "answer": "summer research stipend"
+    },
+    {
+      "id": 15,
+      "question": "When must project ideas be approved?",
+      "answer": "before the fourth week"
+    },
+    {
+      "id": 16,
+      "question": "Who must approve project ideas?",
+      "answer": "faculty advisor"
+    },
+    {
+      "id": 17,
+      "question": "What behavior is not tolerated?",
+      "answer": "Harassment, discrimination, and plagiarism"
+    },
+    {
+      "id": 18,
+      "question": "What must members credit in their projects?",
+      "answer": "external code, datasets, and models"
+    },
+    {
+      "id": 19,
+      "question": "How are code of conduct violations handled?",
+      "answer": "handled confidentially"
+    },
+    {
+      "id": 20,
+      "question": "When are officer elections held?",
+      "answer": "last workshop of the spring semester"
+    },
+    {
+      "id": 21,
+      "question": "How many workshops must you attend to run for office?",
+      "answer": "at least six workshops"
+    },
+    {
+      "id": 22,
+      "question": "How long is an officer term?",
+      "answer": "one-year term"
+    },
+    {
+      "id": 23,
+      "question": "Can officers be re-elected?",
+      "answer": "re-elected once"
+    },
+    {
+      "id": 24,
+      "question": "What officer position organizes workshops?",
+      "answer": "Workshop Coordinator"
+    },
+    {
+      "id": 25,
+      "question": "How can members contact officers by email?",
+      "answer": "ais-officers@example.edu"
+    },
+    {
+      "id": 26,
+      "question": "Where should new members start?",
+      "answer": "onboarding channel"
+    },
+    {
+      "id": 27,
+      "question": "What is the AI Society's mission?",
+      "answer": "hands-on AI education accessible and practical"
+    }
+  ]
+}

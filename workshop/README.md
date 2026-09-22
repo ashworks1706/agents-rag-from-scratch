@@ -80,3 +80,7 @@ The pieces share simple conventions so they fit together:
 - reranking: `Reranker().rerank(query, chunks, k) -> [(chunk, score)]`
 
 Notes: the deployed Streamlit app (`app.py`, `rag.py`) is separate and stays light, needing only `requirements.txt`. Some methods fetch a resource on first use: `token_based.py` downloads the tiktoken vocab, `sentence_nltk.py` downloads the NLTK sentence model, and the embedding and cross-encoder methods download their model from Hugging Face.
+
+## Retrieval race
+
+`benchmark/` holds a small competition: fixed questions and document, and you race to the highest retrieval score by choosing a better splitter, embedding, and search method. See `benchmark/README.md`.
