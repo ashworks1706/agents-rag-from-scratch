@@ -28,7 +28,7 @@ CORPUS = os.path.join(APP_DIR, "benchmark", "corpus.txt")
 GOLD = os.path.join(APP_DIR, "benchmark", "gold.json")
 
 # Paste your Google Form link here to show a "Submit feedback & scores" button.
-FEEDBACK_FORM_URL = ""
+FEEDBACK_FORM_URL = "https://forms.gle/rYatUf94Sx1TqXFN7"
 
 st.set_page_config(page_title="Modern RAG in Practice", page_icon="🔎", layout="centered")
 
