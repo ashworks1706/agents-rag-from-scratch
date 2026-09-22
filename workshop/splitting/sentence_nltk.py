@@ -1,10 +1,4 @@
-"""Sentence splitting with NLTK: group whole sentences up to a size limit.
-
-Splits text into sentences with NLTK, then packs sentences into chunks so a
-chunk never ends mid-sentence.
-
-pip install nltk
-"""
+"""Sentence splitting with NLTK: split into sentences, then pack them up to chunk_size so a chunk never ends mid-sentence."""
 import nltk
 
 
@@ -34,10 +28,3 @@ def split(text, chunk_size=300):
     if current:
         chunks.append(current.strip())
     return chunks
-
-
-if __name__ == "__main__":
-    sample = ("Membership costs 15 dollars. Workshops run on Tuesday. "
-              "Elections happen once a year. Dues can be waived for volunteers.")
-    for i, c in enumerate(split(sample, chunk_size=60)):
-        print(i, repr(c))

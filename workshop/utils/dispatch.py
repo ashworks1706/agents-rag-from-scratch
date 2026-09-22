@@ -1,7 +1,6 @@
 """Maps method names to the modules in each stage folder.
 
-Used by the benchmark harness so it can select a splitter or search method by
-name. main.py does not use this; it imports the methods it wants directly.
+Used by the app to select a splitter or search method by name from the sidebar.
 """
 
 

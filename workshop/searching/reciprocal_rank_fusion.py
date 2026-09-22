@@ -1,15 +1,4 @@
-"""Reciprocal Rank Fusion (RRF): merge several rankings by rank position.
-
-RRF combines ranked lists from different retrievers without comparing their raw
-scores. Each document scores sum(1 / (k + rank)) across the lists. Here we fuse a
-dense ranking and a BM25 ranking.
-
-pip install sentence-transformers rank-bm25 numpy
-"""
-import os
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+"""Reciprocal Rank Fusion (RRF): merge a dense ranking and a BM25 ranking by rank position, scoring each document sum(1/(k+rank))."""
 import numpy as np
 from embedding.dense import DenseEmbedder
 from embedding.sparse_bm25 import BM25Model
@@ -42,11 +31,3 @@ class RRFSearch:
         fused = rrf_fuse([dense_rank, bm25_rank])
         order = sorted(fused, key=lambda i: -fused[i])[:k]
         return [(self.chunks[i], float(fused[i])) for i in order]
-
-
-if __name__ == "__main__":
-    chunks = ["Membership costs 15 dollars per semester.",
-              "Workshops run every Tuesday from 6 to 8 PM.",
-              "Officer elections are held once per year."]
-    for chunk, score in RRFSearch(chunks).search("cost of dues on tuesday", k=3):
-        print(f"{score:.4f}", chunk)

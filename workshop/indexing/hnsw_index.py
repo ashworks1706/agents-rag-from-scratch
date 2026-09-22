@@ -1,10 +1,4 @@
-"""HNSW index: approximate nearest-neighbour search with a graph.
-
-HNSW builds a navigable graph over the vectors, giving fast approximate search
-that scales to millions of vectors. Uses the cosine space here.
-
-pip install hnswlib numpy
-"""
+"""HNSW index: approximate nearest-neighbour search over a navigable graph. Fast and scales to millions of vectors; uses the cosine space."""
 import numpy as np
 import hnswlib
 
@@ -21,13 +15,4 @@ class HnswIndex:
     def query(self, query_vector, k=3):
         q = np.asarray([query_vector], dtype="float32")
         ids, distances = self.index.knn_query(q, k=k)
-        # cosine distance -> similarity
         return [(int(i), float(1.0 - d)) for i, d in zip(ids[0], distances[0])]
-
-
-if __name__ == "__main__":
-    rng = np.random.default_rng(0)
-    vecs = rng.normal(size=(6, 8)).astype("float32")
-    vecs /= np.linalg.norm(vecs, axis=1, keepdims=True)
-    idx = HnswIndex(vecs)
-    print(idx.query(vecs[2], k=3))

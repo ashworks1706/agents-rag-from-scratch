@@ -1,11 +1,4 @@
-"""LSH index: approximate search with random-projection hashing.
-
-Locality-sensitive hashing maps similar vectors to the same bucket using random
-hyperplanes, so a query only compares against vectors in matching buckets. This
-is a compact, from-scratch version for teaching.
-
-pip install numpy
-"""
+"""LSH index: approximate search by hashing vectors into buckets with random hyperplanes, so a query only compares against same-bucket vectors."""
 import numpy as np
 
 
@@ -23,17 +16,7 @@ class LSHIndex:
 
     def query(self, query_vector, k=3):
         q = np.asarray(query_vector, dtype=float)
-        candidates = self.buckets.get(self._hash(q))
-        if not candidates:  # fall back to all vectors if the bucket is empty
-            candidates = range(len(self.vectors))
+        candidates = self.buckets.get(self._hash(q)) or range(len(self.vectors))
         scored = [(int(i), float(self.vectors[i] @ q)) for i in candidates]
         scored.sort(key=lambda t: -t[1])
         return scored[:k]
-
-
-if __name__ == "__main__":
-    rng = np.random.default_rng(0)
-    vecs = rng.normal(size=(20, 8))
-    vecs /= np.linalg.norm(vecs, axis=1, keepdims=True)
-    idx = LSHIndex(vecs, n_bits=6)
-    print(idx.query(vecs[3], k=3))

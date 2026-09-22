@@ -1,15 +1,4 @@
-"""Hybrid embeddings: combine dense (semantic) and sparse (BM25) scores.
-
-Each method scores a corpus; the scores are min-max normalised to [0, 1] and
-mixed with a weight alpha (alpha=1 is pure dense, alpha=0 is pure BM25).
-
-pip install sentence-transformers rank-bm25
-"""
-import os
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+"""Hybrid: combine dense (semantic) and BM25 (keyword) scores. Each is min-max normalised to [0, 1] and mixed by alpha (1=dense, 0=BM25)."""
 import numpy as np
 from embedding.dense import DenseEmbedder
 from embedding.sparse_bm25 import BM25Model
@@ -35,12 +24,3 @@ class HybridScorer:
         combined = self.alpha * _minmax(dense) + (1 - self.alpha) * _minmax(sparse)
         order = np.argsort(-combined)[:k]
         return [(int(i), float(combined[i])) for i in order]
-
-
-if __name__ == "__main__":
-    corpus = ["membership costs 15 dollars per semester",
-              "workshops run every tuesday from 6 to 8 pm",
-              "officer elections happen once a year"]
-    h = HybridScorer(corpus, alpha=0.5)
-    for i, s in h.top_k("how much are dues", k=3):
-        print(f"{s:.3f}", corpus[i])

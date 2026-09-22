@@ -1,15 +1,4 @@
-"""Query fusion: search with several phrasings of the query and merge results.
-
-One query can miss relevant chunks. Query fusion runs several variations and
-averages their scores for broader coverage. Pass your own variations (an LLM can
-generate them); otherwise a few simple ones are derived.
-
-pip install sentence-transformers numpy
-"""
-import os
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+"""Query fusion: search with several phrasings of the query and average their scores for broader coverage. Pass your own variations, or a few simple ones are derived."""
 import numpy as np
 from embedding.dense import DenseEmbedder
 
@@ -32,11 +21,3 @@ class QueryFusionSearch:
         scores /= len(variations)
         order = np.argsort(-scores)[:k]
         return [(self.chunks[i], float(scores[i])) for i in order]
-
-
-if __name__ == "__main__":
-    chunks = ["Membership costs 15 dollars per semester.",
-              "Workshops run every Tuesday from 6 to 8 PM.",
-              "Officer elections are held once per year."]
-    for chunk, score in QueryFusionSearch(chunks).search("dues", k=2):
-        print(f"{score:.3f}", chunk)
