@@ -30,7 +30,33 @@ GOLD = os.path.join(APP_DIR, "benchmark", "gold.json")
 # Paste your Google Form link here to show a "Submit feedback & scores" button.
 FEEDBACK_FORM_URL = "https://forms.gle/rYatUf94Sx1TqXFN7"
 
-st.set_page_config(page_title="Modern RAG in Practice", page_icon="🔎", layout="centered")
+st.set_page_config(page_title="Modern RAG in Practice", layout="centered")
+
+st.markdown(
+    """
+    <style>
+      html, body, [class*="css"], .stApp, button, input, textarea, code, pre {
+        font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+      }
+      .stApp { background: #000; }
+      h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+      .stButton > button, .stFormSubmitButton > button {
+        border-radius: 6px; border: 1px solid #2a2a2a; background: #fff; color: #000; font-weight: 600;
+      }
+      .stButton > button:hover, .stFormSubmitButton > button:hover {
+        background: #000; color: #fff; border-color: #fff;
+      }
+      .stLinkButton > a { border-radius: 6px; border: 1px solid #2a2a2a; background: #0a0a0a; color: #fff; }
+      .stLinkButton > a:hover { border-color: #fff; }
+      [data-testid="stMetric"], [data-testid="stDataFrame"], .stCode, pre {
+        border: 1px solid #1c1c1c; border-radius: 8px;
+      }
+      [data-testid="stMetric"] { padding: 12px 14px; }
+      .stTabs [data-baseweb="tab-list"] { gap: 20px; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 try:
     if "GEMINI_API_KEY" in st.secrets and not os.environ.get("GEMINI_API_KEY"):
@@ -71,7 +97,7 @@ def retrieve_scored(searcher, query):
     return results[:pipeline.TOP_K]
 
 
-st.title("🔎 Modern RAG in Practice")
+st.title("Modern RAG in Practice")
 
 with st.sidebar:
     st.header("Pipeline")
@@ -87,12 +113,12 @@ with st.sidebar:
     st.divider()
     uploaded = st.file_uploader("Ask tab document (optional PDF)", type=["pdf"])
     if os.environ.get("GEMINI_API_KEY"):
-        st.success("Gemini key detected.")
+        st.caption("gemini: connected")
     else:
-        st.warning("No Gemini key: retrieval and scores work; answers are stubs.")
+        st.caption("gemini: not set — answers are stubs")
     if FEEDBACK_FORM_URL:
         st.divider()
-        st.link_button("📋 Feedback & scores", FEEDBACK_FORM_URL)
+        st.link_button("Feedback & scores", FEEDBACK_FORM_URL)
 
 tab_ask, tab_race = st.tabs(["Ask", "Race"])
 
@@ -117,7 +143,7 @@ with tab_ask:
         st.subheader("Answer")
         st.write(answer)
         if warning:
-            st.caption(f"⚠️ {warning}")
+            st.caption(warning)
 
         with st.expander("How was this answer generated?", expanded=True):
             c1, c2, c3 = st.columns(3)
@@ -151,7 +177,7 @@ with tab_race:
             result = score(gold, retrieve_fn, generate_fn)
 
         c1, c2, c3 = st.columns(3)
-        c1.metric(f"Recall@{pipeline.TOP_K}", f"{result['recall']:.3f}", f"{result['hits']}/{result['n']}")
+        c1.metric(f"Recall@{pipeline.TOP_K}", f"{result['recall']:.3f}", f"{result['hits']}/{result['n']}", delta_color="off")
         c2.metric("MRR", f"{result['mrr']:.3f}")
         if result["answer_rate"] is not None:
             c3.metric(f"Answer@{pipeline.TOP_K}", f"{result['answer_rate']:.3f}")
@@ -172,7 +198,7 @@ with tab_race:
             else:
                 buckets["rank 3+"] += 1
         st.caption("Where the answer landed in your top-k:")
-        st.bar_chart(pd.Series(buckets, name="questions"))
+        st.bar_chart(pd.Series(buckets, name="questions"), color="#8a8a8a", horizontal=True)
 
         df = pd.DataFrame(rows)
         df["Rank"] = df["rank"].apply(lambda r: r if r else None)
@@ -201,6 +227,6 @@ with tab_race:
         st.code(line, language="text")
 
         if FEEDBACK_FORM_URL:
-            st.link_button("📋 Submit your feedback & scores", FEEDBACK_FORM_URL, type="primary")
+            st.link_button("Submit feedback & scores", FEEDBACK_FORM_URL)
         else:
             st.caption("Tip: set FEEDBACK_FORM_URL in app.py to add a feedback button here.")

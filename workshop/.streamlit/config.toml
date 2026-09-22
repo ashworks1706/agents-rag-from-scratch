@@ -3,3 +3,11 @@
 # Dropping watcher warnings hides that noise while keeping hot-reload on save.
 [logger]
 level = "error"
+
+[theme]
+base = "dark"
+primaryColor = "#ffffff"
+backgroundColor = "#000000"
+secondaryBackgroundColor = "#0a0a0a"
+textColor = "#e6e6e6"
+font = "monospace"
