@@ -4,8 +4,8 @@ A short competition: everyone scores the same questions against the same
 document and tries to get the highest retrieval score by choosing a better
 splitting and searching strategy.
 
-Run it from the **Race** tab in the app (`streamlit run app.py`). Set the
-pipeline in the sidebar, click **Run benchmark**, and read the score.
+Run it from the **Race** tab in the app (`streamlit run app.py`). Edit
+`pipeline.py` to set your strategy, click **Run benchmark**, and read the score.
 
 - `gold.json` — 27 questions over the sample handbook, each with a short gold
   answer phrase.
@@ -16,7 +16,7 @@ pipeline in the sidebar, click **Run benchmark**, and read the score.
 - The document and questions are fixed and the same for everyone.
 - `k` is fixed for the room; you do not change it.
 - You tune the splitter, chunk size and overlap, the search method, and whether
-  you rerank.
+  you rerank, all in `pipeline.py`.
 - A question is a hit when the gold answer phrase appears in one of your top-k
   chunks, so different chunking is scored fairly.
 

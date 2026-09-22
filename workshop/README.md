@@ -9,10 +9,12 @@ Two tabs, both driven by the method files in the stage folders:
 
 - **Ask** — type a question and get a grounded answer with its sources, the
   similarity score for each chunk, and the retrieval and generation latency.
-- **Race** — pick a strategy in the sidebar (splitter, chunk size, search
-  method, reranking, k) and score it on the gold question set. You get
-  Recall@k, MRR, and (with a key) Answer@k, plus a line to paste into the
-  shared leaderboard.
+- **Race** — score the current pipeline on the gold question set. Edit
+  `pipeline.py` to try a different strategy, then run again. You get Recall@k,
+  MRR, and (with a key) Answer@k, plus a line to paste into the shared
+  leaderboard.
+
+You choose methods by editing **`pipeline.py`** and saving; the app reruns.
 
 ## Run it locally
 
@@ -52,14 +54,29 @@ embedding/    dense, sparse_bm25, hybrid
 indexing/     numpy_flat, faiss_index, hnsw_index, chroma_index, lsh_index
 searching/    semantic_topk, bm25_search, hybrid_search, query_fusion, reciprocal_rank_fusion, ensemble, router
 reranking/    cross_encoder
-utils/        load_pdf, method dispatch, benchmark scoring
+pipeline.py   the pipeline you edit (imports one method per stage)
+utils/        load_pdf and benchmark scoring
 rag.py        turns retrieved chunks into a Gemini answer
-app.py        the Streamlit app (Ask + Race)
+app.py        the Streamlit app (Ask + Race) that runs pipeline.py
 ```
 
-The app's sidebar picks a splitter and search method from these folders. To add
-a method, drop a new file in the right folder following the same small interface
-and add its name to `utils/dispatch.py`.
+`pipeline.py` is the file you edit. It imports one method from each folder; swap
+an import to change a method, tweak the numbers, or flip `USE_RERANKER`, then
+save and the app reruns:
+
+```python
+from splitting.recursive import split
+from searching.semantic_topk import SemanticSearch as Search
+from reranking.cross_encoder import Reranker
+
+CHUNK_SIZE = 500
+OVERLAP = 100
+TOP_K = 3
+USE_RERANKER = False
+```
+
+To add your own method, drop a new file in the right folder following the same
+interface, then point `pipeline.py` at it.
 
 The interfaces:
 
