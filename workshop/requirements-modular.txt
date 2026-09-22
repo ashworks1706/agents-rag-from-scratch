@@ -1,0 +1,15 @@
+# Dependencies for the modular workshop folders (splitting/embedding/indexing/
+# searching/reranking). The deployed Streamlit app only needs requirements.txt;
+# install this to run and experiment with every method.
+
+numpy>=1.26
+sentence-transformers>=3.0
+langchain-text-splitters>=0.3
+rank-bm25>=0.2.2
+faiss-cpu>=1.8
+hnswlib>=0.8
+chromadb>=0.5
+nltk>=3.9
+spacy>=3.7
+tiktoken>=0.7
+lxml>=5.0
