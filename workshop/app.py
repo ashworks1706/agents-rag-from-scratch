@@ -158,6 +158,39 @@ with tab_race:
         else:
             c3.caption("Answer@k needs a Gemini key")
 
+        import pandas as pd
+        rows = result["rows"]
+
+        buckets = {"rank 1": 0, "rank 2": 0, "rank 3+": 0, "missed": 0}
+        for r in rows:
+            if not r["found"]:
+                buckets["missed"] += 1
+            elif r["rank"] == 1:
+                buckets["rank 1"] += 1
+            elif r["rank"] == 2:
+                buckets["rank 2"] += 1
+            else:
+                buckets["rank 3+"] += 1
+        st.caption("Where the answer landed in your top-k:")
+        st.bar_chart(pd.Series(buckets, name="questions"))
+
+        df = pd.DataFrame(rows)
+        df["Rank"] = df["rank"].apply(lambda r: r if r else None)
+        df = df.rename(columns={"question": "Question", "answer": "Answer", "found": "Found"})
+        df = df.sort_values(by=["Found", "Rank"], ascending=[True, True], na_position="first")
+        columns = ["Question", "Answer", "Found", "Rank"]
+        colcfg = {
+            "Question": st.column_config.TextColumn("Question", width="large"),
+            "Found": st.column_config.CheckboxColumn("Found", help="answer appeared in your top-k chunks"),
+            "Rank": st.column_config.NumberColumn("Rank", help="position of the first correct chunk (blank = missed)"),
+        }
+        if any(r["answer_hit"] is not None for r in rows):
+            df["AI ✓"] = df["answer_hit"]
+            columns.append("AI ✓")
+            colcfg["AI ✓"] = st.column_config.CheckboxColumn("AI ✓", help="the LLM answer contained the gold phrase")
+        st.caption("Every question (missed ones first):")
+        st.dataframe(df[columns], hide_index=True, use_container_width=True, height=360, column_config=colcfg)
+
         label = f"{pipeline.split.__module__.split('.')[-1]}/{pipeline.Search.__module__.split('.')[-1]}"
         if pipeline.USE_RERANKER:
             label += "+rerank"
