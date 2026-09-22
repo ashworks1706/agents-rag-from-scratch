@@ -1,7 +1,8 @@
-"""Minimal RAG pipeline: load -> chunk -> embed -> cosine top-k -> LLM answer.
+"""RAG pipeline built on LangChain with a FAISS vector store.
 
-No framework. Set GEMINI_API_KEY to enable generation; without it, retrieval,
-scores and latency still work and the answer is a labeled stub.
+Flow: load PDF -> split -> embed -> FAISS similarity search -> LLM answer.
+Set GEMINI_API_KEY to enable generation; without it, retrieval, scores and
+latency still work and the answer is a labeled stub.
 """
 
 from __future__ import annotations
@@ -10,8 +11,6 @@ import os
 import time
 from dataclasses import dataclass, field
 from typing import Optional
-
-import numpy as np
 
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
 GEMINI_MODEL_NAME = "gemini-3.6-flash"
@@ -39,46 +38,29 @@ class RagResult:
     warnings: list[str] = field(default_factory=list)
 
 
-def load_pdf(path: str) -> str:
-    import pymupdf
-    doc = pymupdf.open(path)
-    text = "\n".join(page.get_text() for page in doc)
-    doc.close()
-    return text
+_embeddings = None
 
 
-def chunk_text(text: str, chunk_size: int = DEFAULT_CHUNK_SIZE, overlap: int = DEFAULT_CHUNK_OVERLAP) -> list[str]:
-    if overlap >= chunk_size:
-        raise ValueError("overlap must be smaller than chunk_size")
-    text = " ".join(text.split())
-    step = chunk_size - overlap
-    chunks = [text[i : i + chunk_size] for i in range(0, len(text), step)]
-    return [c for c in chunks if c.strip()]
+def get_embeddings():
+    global _embeddings
+    if _embeddings is None:
+        from langchain_huggingface import HuggingFaceEmbeddings
+        # Normalised vectors so inner product equals cosine similarity.
+        _embeddings = HuggingFaceEmbeddings(
+            model_name=EMBED_MODEL_NAME,
+            encode_kwargs={"normalize_embeddings": True},
+        )
+    return _embeddings
 
 
-_embedder = None
-
-
-def get_embedder():
-    global _embedder
-    if _embedder is None:
-        from sentence_transformers import SentenceTransformer
-        _embedder = SentenceTransformer(EMBED_MODEL_NAME)
-    return _embedder
-
-
-def embed(texts: list[str]) -> np.ndarray:
-    # Normalise so a dot product equals cosine similarity.
-    vecs = get_embedder().encode(texts, convert_to_numpy=True, show_progress_bar=False)
-    norms = np.linalg.norm(vecs, axis=1, keepdims=True)
-    norms[norms == 0] = 1e-12
-    return vecs / norms
-
-
-def cosine_top_k(query_vec: np.ndarray, chunk_vecs: np.ndarray, chunks: list[str], k: int = DEFAULT_TOP_K) -> list[RetrievedChunk]:
-    scores = chunk_vecs @ query_vec
-    top_idx = np.argsort(-scores)[: min(k, len(chunks))]
-    return [RetrievedChunk(chunks[i], float(scores[i]), int(i)) for i in top_idx]
+def _build_store(docs):
+    from langchain_community.vectorstores import FAISS
+    from langchain_community.vectorstores.utils import DistanceStrategy
+    return FAISS.from_documents(
+        docs,
+        get_embeddings(),
+        distance_strategy=DistanceStrategy.MAX_INNER_PRODUCT,
+    )
 
 
 PROMPT_TEMPLATE = """You are a helpful assistant answering questions about a document.
@@ -92,10 +74,10 @@ Question: {question}
 Answer:"""
 
 
-def _stub_answer(chunks: list[RetrievedChunk], reason: str = "No GEMINI_API_KEY set") -> str:
+def _stub_answer(chunks: list[RetrievedChunk]) -> str:
     top = chunks[0].text if chunks else "(no chunks retrieved)"
     return (
-        f"[{reason} — showing retrieval only, no generated answer.]\n\n"
+        "[No GEMINI_API_KEY set. Showing retrieval only, no generated answer.]\n\n"
         f"Most relevant passage:\n\n\"{top[:300]}...\""
     )
 
@@ -107,32 +89,47 @@ def generate_answer(question: str, chunks: list[RetrievedChunk]) -> tuple[str, b
     context = "\n\n---\n\n".join(f"[Source {i+1}] {c.text}" for i, c in enumerate(chunks))
     prompt = PROMPT_TEMPLATE.format(context=context, question=question)
     try:
-        from google import genai
-        client = genai.Client(api_key=api_key)
-        resp = client.models.generate_content(model=GEMINI_MODEL_NAME, contents=prompt)
-        return (resp.text or "").strip(), True, None
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        llm = ChatGoogleGenerativeAI(model=GEMINI_MODEL_NAME, google_api_key=api_key)
+        return llm.invoke(prompt).content.strip(), True, None
     except Exception as exc:
-        return _stub_answer(chunks, "Generation failed, see the warning below"), False, f"Generation failed ({exc.__class__.__name__}): {exc}"
+        return _stub_answer(chunks), False, f"Generation failed ({exc.__class__.__name__}): {exc}"
 
 
 class RagPipeline:
-    def __init__(self, chunks: list[str], chunk_vecs: np.ndarray):
-        self.chunks = chunks
-        self.chunk_vecs = chunk_vecs
+    def __init__(self, store):
+        self.store = store
 
     @classmethod
     def from_pdf(cls, path: str, chunk_size: int = DEFAULT_CHUNK_SIZE, overlap: int = DEFAULT_CHUNK_OVERLAP) -> "RagPipeline":
-        return cls.from_text(load_pdf(path), chunk_size, overlap)
+        from langchain_community.document_loaders import PyMuPDFLoader
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+        pages = PyMuPDFLoader(path).load()
+        splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=overlap)
+        docs = splitter.split_documents(pages)
+        return cls(_build_store(docs))
 
     @classmethod
     def from_text(cls, text: str, chunk_size: int = DEFAULT_CHUNK_SIZE, overlap: int = DEFAULT_CHUNK_OVERLAP) -> "RagPipeline":
-        chunks = chunk_text(text, chunk_size, overlap)
-        return cls(chunks, embed(chunks))
+        from langchain_core.documents import Document
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+        splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=overlap)
+        docs = splitter.split_documents([Document(page_content=text)])
+        return cls(_build_store(docs))
+
+    @property
+    def chunks(self) -> list[str]:
+        store = self.store.docstore._dict
+        return [d.page_content for d in store.values()]
 
     def answer(self, question: str, k: int = DEFAULT_TOP_K) -> RagResult:
         warnings: list[str] = []
         t0 = time.perf_counter()
-        retrieved = cosine_top_k(embed([question])[0], self.chunk_vecs, self.chunks, k)
+        hits = self.store.similarity_search_with_score(question, k=k)
+        retrieved = [
+            RetrievedChunk(text=doc.page_content, score=float(score), index=i)
+            for i, (doc, score) in enumerate(hits)
+        ]
         t1 = time.perf_counter()
         answer, used_llm, warning = generate_answer(question, retrieved)
         t2 = time.perf_counter()
