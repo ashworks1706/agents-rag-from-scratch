@@ -2,8 +2,8 @@
 
 The pipeline is defined in pipeline.py; edit that file to change methods. This
 app just runs it, in two tabs:
-  Ask   - ask a question, see the grounded answer, sources, scores, and latency.
-  Race  - score the current pipeline on the gold question set (Recall@k, MRR).
+  Ask   - ask a question about a document, see the answer, sources, and latency.
+  Race  - score the pipeline on a fixed benchmark (SQuAD-based) for Recall@k/MRR.
 """
 
 import importlib
@@ -24,7 +24,11 @@ importlib.reload(pipeline)  # pick up edits to pipeline.py on each rerun
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_DOC = os.path.join(APP_DIR, "sample_document.pdf")
+CORPUS = os.path.join(APP_DIR, "benchmark", "corpus.txt")
 GOLD = os.path.join(APP_DIR, "benchmark", "gold.json")
+
+# Paste your Google Form link here to show a "Submit feedback & scores" button.
+FEEDBACK_FORM_URL = "https://forms.gle/rYatUf94Sx1TqXFN7"
 
 st.set_page_config(page_title="Modern RAG in Practice", page_icon="🔎", layout="centered")
 
@@ -42,8 +46,13 @@ def pipeline_sig():
 
 
 @st.cache_resource(show_spinner="Indexing the document...")
-def build_cached(doc_path, sig):
+def build_doc(doc_path, sig):
     return pipeline.build(load_pdf(doc_path))
+
+
+@st.cache_resource(show_spinner="Indexing the benchmark corpus...")
+def build_bench(sig):
+    return pipeline.build(open(CORPUS, encoding="utf-8").read())
 
 
 @st.cache_resource(show_spinner="Loading reranker...")
@@ -76,24 +85,26 @@ with st.sidebar:
         language="text",
     )
     st.divider()
-    uploaded = st.file_uploader("Document (optional PDF)", type=["pdf"])
+    uploaded = st.file_uploader("Ask tab document (optional PDF)", type=["pdf"])
     if os.environ.get("GEMINI_API_KEY"):
         st.success("Gemini key detected.")
     else:
         st.warning("No Gemini key: retrieval and scores work; answers are stubs.")
-
-doc_path = DEFAULT_DOC
-if uploaded is not None:
-    doc_path = os.path.join(APP_DIR, f"_uploaded_{uploaded.name}")
-    with open(doc_path, "wb") as fh:
-        fh.write(uploaded.getvalue())
-
-chunks, searcher = build_cached(doc_path, pipeline_sig())
-st.caption(f"{len(chunks)} chunks indexed.")
+    if FEEDBACK_FORM_URL:
+        st.divider()
+        st.link_button("📋 Feedback & scores", FEEDBACK_FORM_URL)
 
 tab_ask, tab_race = st.tabs(["Ask", "Race"])
 
 with tab_ask:
+    doc_path = DEFAULT_DOC
+    if uploaded is not None:
+        doc_path = os.path.join(APP_DIR, f"_uploaded_{uploaded.name}")
+        with open(doc_path, "wb") as fh:
+            fh.write(uploaded.getvalue())
+    chunks, searcher = build_doc(doc_path, pipeline_sig())
+    st.caption(f"{len(chunks)} chunks indexed from the document.")
+
     question = st.text_input("Your question", placeholder="e.g. How much does membership cost?")
     if st.button("Ask", type="primary") and question.strip():
         t0 = time.perf_counter()
@@ -121,14 +132,15 @@ with tab_ask:
                 st.divider()
 
 with tab_race:
-    st.write("Score the current pipeline on the gold question set. "
-             "Edit `pipeline.py` to try a different strategy, then run again. "
-             "Keep **TOP_K** the same as the rest of the room.")
+    st.write("Score the current pipeline on the benchmark (108 questions over a "
+             "SQuAD-based corpus). Edit `pipeline.py` to try a different strategy, "
+             "then run again. Keep **TOP_K** the same as the rest of the room.")
     if st.button("Run benchmark", type="primary"):
+        _, bench_searcher = build_bench(pipeline_sig())
         gold = load_gold(GOLD)
         with st.spinner(f"Scoring {len(gold)} questions..."):
             def retrieve_fn(q):
-                return [c for c, _ in retrieve_scored(searcher, q)]
+                return [c for c, _ in retrieve_scored(bench_searcher, q)]
 
             generate_fn = None
             if os.environ.get("GEMINI_API_KEY"):
@@ -154,3 +166,8 @@ with tab_race:
             line += f"  Answer@{pipeline.TOP_K}={result['answer_rate']:.3f}"
         st.caption("Copy your best line into benchmark/leaderboard.md:")
         st.code(line, language="text")
+
+        if FEEDBACK_FORM_URL:
+            st.link_button("📋 Submit your feedback & scores", FEEDBACK_FORM_URL, type="primary")
+        else:
+            st.caption("Tip: set FEEDBACK_FORM_URL in app.py to add a feedback button here.")

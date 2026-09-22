@@ -63,7 +63,7 @@ Open any file to see how that method works.
 ## The race
 
 Pick a strategy in `pipeline.py`, open the **Race** tab, and click **Run
-benchmark**. It scores 27 questions on the sample handbook:
+benchmark**. It scores 108 questions over a SQuAD-based corpus:
 
 - **Recall@k** — did the answer show up in your top results? (main score)
 - **MRR** — did it rank the right chunk high? (tiebreaker)
@@ -84,3 +84,6 @@ get a public link. The first build takes a few minutes.
   answers (change `GEMINI_MODEL_NAME` in `rag.py` if needed).
 - Some methods in the folders need extra packages (FAISS, spaCy, ...); see
   `requirements-modular.txt`.
+- To collect feedback and scores, set `FEEDBACK_FORM_URL` in `app.py` to your
+  Google Form link; a **Submit feedback & scores** button then appears after the
+  race results and in the sidebar.
