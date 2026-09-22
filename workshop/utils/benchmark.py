@@ -16,9 +16,10 @@ def load_gold(path):
     return json.load(open(path))["questions"]
 
 
-def score(gold, retrieve_fn, generate_fn=None):
+def score(gold, retrieve_fn, generate_fn=None, on_progress=None):
     """retrieve_fn(question) -> list of top-k chunk texts.
     generate_fn(question, chunks) -> answer text, or None to skip answer scoring.
+    on_progress(i, n, row) is called after each question, for live UI.
     Returns aggregate metrics plus a per-question 'rows' list.
     """
     n = len(gold)
@@ -26,7 +27,7 @@ def score(gold, retrieve_fn, generate_fn=None):
     rr_sum = 0.0
     answer_hits = 0
     rows = []
-    for item in gold:
+    for i, item in enumerate(gold, start=1):
         question = item["question"]
         ans = norm(item["answer"])
         top = retrieve_fn(question)
@@ -39,13 +40,16 @@ def score(gold, retrieve_fn, generate_fn=None):
             answer_hit = ans in norm(generate_fn(question, top))
             if answer_hit:
                 answer_hits += 1
-        rows.append({
+        row = {
             "question": question,
             "answer": item["answer"],
             "found": rank is not None,
             "rank": rank,
             "answer_hit": answer_hit,
-        })
+        }
+        rows.append(row)
+        if on_progress is not None:
+            on_progress(i, n, row)
     return {
         "n": n,
         "hits": hits,
