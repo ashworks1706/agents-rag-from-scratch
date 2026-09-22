@@ -72,6 +72,36 @@ def pipeline_sig():
             pipeline.CHUNK_SIZE, pipeline.OVERLAP)
 
 
+def pipeline_diagram_html():
+    """A left-to-right node diagram of the current pipeline."""
+    has_key = bool(os.environ.get("GEMINI_API_KEY"))
+
+    def node(label, value, sub="", dim=False):
+        color = "#4a4a4a" if dim else "#e6e6e6"
+        border = "#161616" if dim else "#2a2a2a"
+        sub_html = f'<div style="font-size:11px;color:#7a7a7a">{sub}</div>' if sub else ""
+        return (
+            f'<div style="border:1px solid {border};border-radius:8px;padding:7px 12px;'
+            f'background:#0a0a0a;text-align:center;color:{color}">'
+            f'<div style="font-size:11px;color:#7a7a7a">{label}</div>'
+            f'<div style="font-weight:700">{value}</div>{sub_html}</div>'
+        )
+
+    arrow = '<div style="color:#5a5a5a">&rarr;</div>'
+    nodes = [
+        node("input", "document"),
+        node("split", pipeline.split.__module__.split(".")[-1], f"{pipeline.CHUNK_SIZE}/{pipeline.OVERLAP}"),
+        node("search", pipeline.Search.__module__.split(".")[-1], f"top {pipeline.TOP_K}"),
+        node("rerank", "cross_encoder" if pipeline.USE_RERANKER else "off", dim=not pipeline.USE_RERANKER),
+        node("answer", "gemini" if has_key else "stub", dim=not has_key),
+    ]
+    return (
+        '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;'
+        'margin:4px 0 16px;font-family:ui-monospace,SF Mono,Menlo,monospace">'
+        + arrow.join(nodes) + "</div>"
+    )
+
+
 @st.cache_resource(show_spinner="Indexing the document...")
 def build_doc(doc_path, sig):
     return pipeline.build(load_pdf(doc_path))
@@ -123,12 +153,7 @@ if uploaded is not None:
 chunks, searcher = build_doc(doc_path, pipeline_sig())
 
 st.title("Modern RAG in Practice")
-st.caption(
-    f"pipeline —  split: {pipeline.split.__module__.split('.')[-1]}  ·  "
-    f"search: {pipeline.Search.__module__.split('.')[-1]}  ·  "
-    f"chunk: {pipeline.CHUNK_SIZE}/{pipeline.OVERLAP}  ·  "
-    f"top_k: {pipeline.TOP_K}  ·  rerank: {'on' if pipeline.USE_RERANKER else 'off'}"
-)
+st.markdown(pipeline_diagram_html(), unsafe_allow_html=True)
 tab_ask, tab_race, tab_index = st.tabs(["Ask", "Race", "Index"])
 
 with tab_ask:
