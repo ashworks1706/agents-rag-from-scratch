@@ -1,140 +1,438 @@
 {
-  "document": "sample_document.pdf",
+  "source": "SQuAD 1.1 dev (Rajpurkar et al., 2016), CC BY-SA 4.0",
+  "corpus_file": "corpus.txt",
   "questions": [
     {
-      "id": 1,
-      "question": "How much does membership cost?",
-      "answer": "15 dollars per semester"
+      "question": "In what year was Nikola Tesla born?",
+      "answer": "1856"
     },
     {
-      "id": 2,
-      "question": "What does standard membership include access to?",
-      "answer": "members-only Discord server"
+      "question": "What was Nikola Tesla's ethnicity?",
+      "answer": "Serbian"
     },
     {
-      "id": 3,
-      "question": "When are membership dues waived?",
-      "answer": "at least three sessions"
+      "question": "In what year did Nikola Tesla emigrate to the United States?",
+      "answer": "1884"
     },
     {
-      "id": 4,
-      "question": "Do members have to re-register each term?",
-      "answer": "fall and spring terms"
+      "question": "Who did Tesla work for in the 1880s?",
+      "answer": "Thomas Edison"
     },
     {
-      "id": 5,
-      "question": "When do workshops run?",
-      "answer": "every Tuesday from 6 to 8 PM"
+      "question": "When did Tesla discover the possibility of wireless connectivity?",
+      "answer": "1893"
     },
     {
-      "id": 6,
-      "question": "Where are the workshops held?",
-      "answer": "room 210"
+      "question": "Were Tesla's experiments high-voltage or low-voltage?",
+      "answer": "high-voltage"
     },
     {
-      "id": 7,
-      "question": "Can I attend a workshop without having attended previous ones?",
-      "answer": "self-contained"
+      "question": "What year did Tesla die?",
+      "answer": "1943"
     },
     {
-      "id": 8,
-      "question": "What topics do the workshops cover?",
-      "answer": "machine learning fundamentals"
+      "question": "What was named \"The Tesla\" in his honor?",
+      "answer": "SI unit of magnetic flux density"
     },
     {
-      "id": 9,
-      "question": "How soon are workshop recordings posted?",
-      "answer": "within 48 hours"
+      "question": "What modern-day country was Tesla born in?",
+      "answer": "Croatia"
     },
     {
-      "id": 10,
-      "question": "How many members are on a project team?",
-      "answer": "three to five members"
+      "question": "What was the occupation of Tesla's father?",
+      "answer": "priest"
     },
     {
-      "id": 11,
-      "question": "How often do project teams meet?",
-      "answer": "Teams meet weekly"
+      "question": "How many siblings did Tesla have?",
+      "answer": "four"
     },
     {
-      "id": 12,
-      "question": "What do project teams present at the end of the semester?",
-      "answer": "end-of-semester showcase"
+      "question": "What language did Tesla study while in school?",
+      "answer": "German"
     },
     {
-      "id": 13,
-      "question": "What do you receive for completing the project track?",
-      "answer": "receive a certificate"
+      "question": "Who was Tesla influenced by while in school?",
+      "answer": "Martin Sekuli\u0107"
     },
     {
-      "id": 14,
-      "question": "What are project track graduates eligible to apply for?",
-      "answer": "summer research stipend"
+      "question": "What language were classes held in at Tesla's school?",
+      "answer": "German"
     },
     {
-      "id": 15,
-      "question": "When must project ideas be approved?",
-      "answer": "before the fourth week"
+      "question": "What disease did Tesla contract in 1873?",
+      "answer": "cholera"
     },
     {
-      "id": 16,
-      "question": "Who must approve project ideas?",
-      "answer": "faculty advisor"
+      "question": "How long was he bedridden with cholera?",
+      "answer": "nine months"
     },
     {
-      "id": 17,
-      "question": "What behavior is not tolerated?",
-      "answer": "Harassment, discrimination, and plagiarism"
+      "question": "Where did Tesla run to avoid the army draft?",
+      "answer": "Tomingaj"
     },
     {
-      "id": 18,
-      "question": "What must members credit in their projects?",
-      "answer": "external code, datasets, and models"
+      "question": "Whose works helped Tesla recover from illness?",
+      "answer": "Mark Twain"
     },
     {
-      "id": 19,
-      "question": "How are code of conduct violations handled?",
-      "answer": "handled confidentially"
+      "question": "The atomic number of the periodic table for oxygen?",
+      "answer": "8"
     },
     {
-      "id": 20,
-      "question": "When are officer elections held?",
-      "answer": "last workshop of the spring semester"
+      "question": "What is the second most abundant element?",
+      "answer": "helium"
     },
     {
-      "id": 21,
-      "question": "How many workshops must you attend to run for office?",
-      "answer": "at least six workshops"
+      "question": "Oxygen is released in cellular respiration by?",
+      "answer": "photosynthesis"
     },
     {
-      "id": 22,
-      "question": "How long is an officer term?",
-      "answer": "one-year term"
+      "question": "Photosynthesis uses which energy to for oxygen from water?",
+      "answer": "sunlight"
     },
     {
-      "id": 23,
-      "question": "Can officers be re-elected?",
-      "answer": "re-elected once"
+      "question": "Who proved that air is necessary for combustion?",
+      "answer": "Robert Boyle"
     },
     {
-      "id": 24,
-      "question": "What officer position organizes workshops?",
-      "answer": "Workshop Coordinator"
+      "question": "What English chemist showed that fire only needed nitoaereus?",
+      "answer": "John Mayow"
     },
     {
-      "id": 25,
-      "question": "How can members contact officers by email?",
-      "answer": "ais-officers@example.edu"
+      "question": "\"An Account of Further Discoveries in Air\" was published by who in 1775?",
+      "answer": "Joseph Priestley"
     },
     {
-      "id": 26,
-      "question": "Where should new members start?",
-      "answer": "onboarding channel"
+      "question": "What was the occupation of Joseph Priestley?",
+      "answer": "clergyman"
     },
     {
-      "id": 27,
-      "question": "What is the AI Society's mission?",
-      "answer": "hands-on AI education accessible and practical"
+      "question": "What inventor built on to the findings of Philo of  Byzantium?",
+      "answer": "Leonardo da Vinci"
+    },
+    {
+      "question": "Pneumatica was written by what Greek writer?",
+      "answer": "Philo of Byzantium"
+    },
+    {
+      "question": "What is needed to make combustion happen?",
+      "answer": "heat or a spark"
+    },
+    {
+      "question": "Combustion is caused by an oxidant and a fuel. What role does oxygen play in combustion?",
+      "answer": "Oxygen is the oxidant"
+    },
+    {
+      "question": "What chemical element was the cause of the Apollo 1 disastrous outcome?",
+      "answer": "pure O"
+    },
+    {
+      "question": "______ In both liquid and gas form can fastly result in an exlposion.",
+      "answer": "oxygen"
+    },
+    {
+      "question": "Granite is made up largely of what chemical compound?",
+      "answer": "oxides of silicon"
+    },
+    {
+      "question": "Oxygen exists in the atmosphere by way of what?",
+      "answer": "carbon dioxide"
+    },
+    {
+      "question": "What did John Dalton think that all elements were in number present in compounds?",
+      "answer": "monatomic"
+    },
+    {
+      "question": "What did Dalton think the atomic ratios were between atoms in compounds?",
+      "answer": "simplest"
+    },
+    {
+      "question": "Which name is also used to describe the Amazon rainforest in English?",
+      "answer": "also known in English as Amazonia or the Amazon Jungle,"
+    },
+    {
+      "question": "How many nations control this region in total?",
+      "answer": "This region includes territory belonging to nine nations."
+    },
+    {
+      "question": "What may have caused rainforests to grow across South America?",
+      "answer": "the extinction of the dinosaurs and the wetter climate"
+    },
+    {
+      "question": "How many degrees south did the Amazon rainforest reach from 66-34 Mya?",
+      "answer": "45"
+    },
+    {
+      "question": "In which direction did the water on the eastern side flow?",
+      "answer": "Water on the eastern side flowed toward the Atlantic,"
+    },
+    {
+      "question": "What is the name of the basin that was created from a enclosed lake?",
+      "answer": "Solim\u00f5es Basin"
+    },
+    {
+      "question": "What does LGM stands for?",
+      "answer": "Last Glacial Maximum"
+    },
+    {
+      "question": "How has this debate been proven?",
+      "answer": "This debate has proved difficult"
+    },
+    {
+      "question": "What is the name of the satellite that measured the amount of dust?",
+      "answer": "CALIPSO"
+    },
+    {
+      "question": "How many tons of dust are blown from the Sahara each year?",
+      "answer": "182 million tons"
+    },
+    {
+      "question": "What is the name of the book written by Archeologist Betty Meggers?",
+      "answer": "Man and Culture in a Counterfeit Paradise"
+    },
+    {
+      "question": "What is the maximum square miles did Betty Meggers claim that can be sustained in the rainforest?",
+      "answer": "0.52/sq mi"
+    },
+    {
+      "question": "Who was the first European to travel the Amazon River?",
+      "answer": "Francisco de Orellana"
+    },
+    {
+      "question": "During what time did civilization in the Amazon was flourishing when Orellana made his observations?",
+      "answer": "1540s"
+    },
+    {
+      "question": "What is terra preta called?",
+      "answer": "black earth"
+    },
+    {
+      "question": "How much is terra preta distributed over the Amazon forest?",
+      "answer": "large areas"
+    },
+    {
+      "question": "How many species of insects are known in the region?",
+      "answer": "2.5 million"
+    },
+    {
+      "question": "What portion of bird species make up the world's total live in the rainforest?",
+      "answer": "One in five"
+    },
+    {
+      "question": "What project put the first Americans into space?",
+      "answer": "Project Mercury"
+    },
+    {
+      "question": "What program was created to carry out these projects and missions?",
+      "answer": "National Aeronautics and Space Administration (NASA)"
+    },
+    {
+      "question": "How long did Project Apollo run?",
+      "answer": "1961 to 1972"
+    },
+    {
+      "question": "What program helped develop space travel techniques that Project Apollo used?",
+      "answer": "Gemini program"
+    },
+    {
+      "question": "In what year did the Apollo 1 cabin fire occur?",
+      "answer": "1967"
+    },
+    {
+      "question": "What type of launch was happening during the Apollo 1 incident?",
+      "answer": "prelaunch test"
+    },
+    {
+      "question": "What was the first spacecraft to orbit another celestial body?",
+      "answer": "Apollo 8"
+    },
+    {
+      "question": "What Apollo mission was the sixth moon landing?",
+      "answer": "Apollo 17"
+    },
+    {
+      "question": "How many people could the Mercury capsule hold?",
+      "answer": "one"
+    },
+    {
+      "question": "How many people could Apollo be projected to hold?",
+      "answer": "three"
+    },
+    {
+      "question": "In what year was the Apollo program announced?",
+      "answer": "1960"
+    },
+    {
+      "question": "Who led the in house design studies for NASA?",
+      "answer": "Maxime Faget"
+    },
+    {
+      "question": "Who was elected President in November 1960?",
+      "answer": "John F. Kennedy"
+    },
+    {
+      "question": "Against what country was Kennedy promising superiority over?",
+      "answer": "Soviet Union"
+    },
+    {
+      "question": "Who was the first person in space?",
+      "answer": "Yuri Gagarin"
+    },
+    {
+      "question": "From what country did the first person in space come from?",
+      "answer": "Soviet Union"
+    },
+    {
+      "question": "What month and day did Kennedy message his vice president about the status of the program?",
+      "answer": "April 20"
+    },
+    {
+      "question": "Who was Kennedy's vice president?",
+      "answer": "Lyndon B. Johnson"
+    },
+    {
+      "question": "Which NFL team represented the AFC at Super Bowl 50?",
+      "answer": "Denver Broncos"
+    },
+    {
+      "question": "Which NFL team represented the NFC at Super Bowl 50?",
+      "answer": "Carolina Panthers"
+    },
+    {
+      "question": "Which Carolina Panthers player was named Most Valuable Player?",
+      "answer": "Cam Newton"
+    },
+    {
+      "question": "How many appearances have the Denver Broncos made in the Super Bowl?",
+      "answer": "8"
+    },
+    {
+      "question": "Who was the Super Bowl 50 MVP?",
+      "answer": "Von Miller"
+    },
+    {
+      "question": "How many fumbles did Von Miller force in Super Bowl 50?",
+      "answer": "2"
+    },
+    {
+      "question": "Which network broadcasted Super Bowl 50 in the U.S.?",
+      "answer": "CBS"
+    },
+    {
+      "question": "What was the average cost for a 30 second commercial during Super Bowl 50?",
+      "answer": "$5 million"
+    },
+    {
+      "question": "Who was the NFL Commissioner in early 2012?",
+      "answer": "Roger Goodell"
+    },
+    {
+      "question": "Which Super Bowl did Roger Goodell speak about?",
+      "answer": "the 50th Super Bowl"
+    },
+    {
+      "question": "Which Louisiana venue was one of three considered for Super Bowl 50?",
+      "answer": "New Orleans' Mercedes-Benz Superdome"
+    },
+    {
+      "question": "Which Florida venue was one of three considered for Super Bowl 50?",
+      "answer": "Miami's Sun Life Stadium"
+    },
+    {
+      "question": "When were the two finalists for hosting Super Bowl 50 announced?",
+      "answer": "October 16, 2012"
+    },
+    {
+      "question": "How many times has the South Florida/Miami area hosted the Super Bowl?",
+      "answer": "10"
+    },
+    {
+      "question": "When was Levi's Stadium awarded the right to host Super Bowl 50?",
+      "answer": "May 21, 2013"
+    },
+    {
+      "question": "Who voted on the venue for Super Bowl 50?",
+      "answer": "NFL owners"
+    },
+    {
+      "question": "Who coached each Super Bowl 50 participant in their most recent Super Bowl appearance prior to Super Bowl 50?",
+      "answer": "John Fox"
+    },
+    {
+      "question": "How many NFL teams have finished the regular season with one loss?",
+      "answer": "ten"
+    },
+    {
+      "question": "Along with geothermal and nuclear, what is a notable non-combustion heat source?",
+      "answer": "solar"
+    },
+    {
+      "question": "What ideal thermodynamic cycle analyzes the process by which steam engines work?",
+      "answer": "Rankine"
+    },
+    {
+      "question": "What was the first true engine that was commercially successful?",
+      "answer": "atmospheric engine"
+    },
+    {
+      "question": "Who was the inventor of the atmospheric engine?",
+      "answer": "Thomas Newcomen"
+    },
+    {
+      "question": "In what country was a full-scale working railway steam locomotive first invented?",
+      "answer": "United Kingdom"
+    },
+    {
+      "question": "On what date did the first railway trip in the world occur?",
+      "answer": "21 February 1804"
+    },
+    {
+      "question": "What device is used to recycle the boiler water in most steam engines?",
+      "answer": "water pump"
+    },
+    {
+      "question": "What types of pumps are typically used in industrial boilers?",
+      "answer": "multi-stage centrifugal"
+    },
+    {
+      "question": "How many expansion stages are used by the triple expansion engine?",
+      "answer": "three"
+    },
+    {
+      "question": "What are engines using four expansion stages known as?",
+      "answer": "quadruple expansion engines"
+    },
+    {
+      "question": "Along with poppet valve gears, what type of gears utilized separate admission and exhaust valves to give ideal events?",
+      "answer": "Corliss"
+    },
+    {
+      "question": "Along with Stephenson and Walschaerts, what is an example of a simple motion?",
+      "answer": "Joy"
+    },
+    {
+      "question": "What are sometimes present in the boiler's firebox crown?",
+      "answer": "Lead fusible plugs"
+    },
+    {
+      "question": "What happens to the lead fusible plugs if the water level of the boiler drops?",
+      "answer": "melts"
+    },
+    {
+      "question": "Who patented a steam engine in 1781?",
+      "answer": "James Watt"
+    },
+    {
+      "question": "What sort of motion did Watt's steam engine continuously produce?",
+      "answer": "rotary"
+    },
+    {
+      "question": "In what century did the history of the steam engine begin?",
+      "answer": "first"
+    },
+    {
+      "question": "Who conceptualized the aeolipile?",
+      "answer": "Hero of Alexandria"
     }
   ]
 }

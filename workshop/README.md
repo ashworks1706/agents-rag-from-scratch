@@ -63,7 +63,7 @@ Open any file to see how that method works.
 ## The race
 
 Pick a strategy in `pipeline.py`, open the **Race** tab, and click **Run
-benchmark**. It scores 27 questions on the sample handbook:
+benchmark**. It scores 108 questions over a SQuAD-based corpus:
 
 - **Recall@k** — did the answer show up in your top results? (main score)
 - **MRR** — did it rank the right chunk high? (tiebreaker)
