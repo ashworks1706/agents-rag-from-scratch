@@ -72,14 +72,71 @@ def pipeline_sig():
             pipeline.CHUNK_SIZE, pipeline.OVERLAP)
 
 
-@st.cache_resource(show_spinner="Indexing the document...")
-def build_doc(doc_path, sig):
-    return pipeline.build(load_pdf(doc_path))
+def pipeline_diagram_html():
+    """A left-to-right node diagram of the current pipeline."""
+    has_key = bool(os.environ.get("GEMINI_API_KEY"))
+
+    def node(label, value, sub="", dim=False):
+        color = "#4a4a4a" if dim else "#e6e6e6"
+        border = "#161616" if dim else "#2a2a2a"
+        sub_html = f'<div style="font-size:11px;color:#7a7a7a">{sub}</div>' if sub else ""
+        return (
+            f'<div style="border:1px solid {border};border-radius:8px;padding:7px 12px;'
+            f'background:#0a0a0a;text-align:center;color:{color}">'
+            f'<div style="font-size:11px;color:#7a7a7a">{label}</div>'
+            f'<div style="font-weight:700">{value}</div>{sub_html}</div>'
+        )
+
+    arrow = '<div style="color:#5a5a5a">&rarr;</div>'
+    nodes = [
+        node("input", "document"),
+        node("split", pipeline.split.__module__.split(".")[-1], f"{pipeline.CHUNK_SIZE}/{pipeline.OVERLAP}"),
+        node("search", pipeline.Search.__module__.split(".")[-1], f"top {pipeline.TOP_K}"),
+        node("rerank", "cross_encoder" if pipeline.USE_RERANKER else "off", dim=not pipeline.USE_RERANKER),
+        node("answer", "gemini" if has_key else "stub", dim=not has_key),
+    ]
+    return (
+        '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;'
+        'margin:4px 0 16px;font-family:ui-monospace,SF Mono,Menlo,monospace">'
+        + arrow.join(nodes) + "</div>"
+    )
 
 
-@st.cache_resource(show_spinner="Indexing the benchmark corpus...")
-def build_bench(sig):
-    return pipeline.build(open(CORPUS, encoding="utf-8").read())
+@st.cache_resource(show_spinner=False)
+def build_doc(doc_path, sig, _on_stage=None):
+    return pipeline.build(load_pdf(doc_path), on_stage=_on_stage)
+
+
+@st.cache_resource(show_spinner=False)
+def build_bench(sig, _on_stage=None):
+    return pipeline.build(open(CORPUS, encoding="utf-8").read(), on_stage=_on_stage)
+
+
+def staged_build(label, builder, sig):
+    """Run a cached build, narrating each real stage in a live status box.
+    On a cache hit the build is instant and the box clears itself.
+    """
+    box = st.empty()
+    with box:
+        status = st.status(label, expanded=True)
+    fired = {"hit": False, "chunks": 0}
+
+    def on_stage(name, n=None):
+        fired["hit"] = True
+        if name == "split":
+            fired["chunks"] = n
+            status.write(f"split   → {n} chunks")
+            status.update(label="Building the search index...")
+        elif name == "index":
+            status.write(f"index   → {n} vectors ready")
+
+    result = builder(sig, _on_stage=on_stage)
+    if fired["hit"]:
+        status.update(label=f"Ready — {fired['chunks']} chunks indexed",
+                      state="complete", expanded=False)
+    else:
+        box.empty()
+    return result
 
 
 @st.cache_resource(show_spinner="Loading reranker...")
@@ -120,9 +177,14 @@ if uploaded is not None:
     doc_path = os.path.join(APP_DIR, f"_uploaded_{uploaded.name}")
     with open(doc_path, "wb") as fh:
         fh.write(uploaded.getvalue())
-chunks, searcher = build_doc(doc_path, pipeline_sig())
+chunks, searcher = staged_build(
+    "Indexing the document...",
+    lambda sig, _on_stage=None: build_doc(doc_path, sig, _on_stage=_on_stage),
+    pipeline_sig(),
+)
 
 st.title("Modern RAG in Practice")
+st.markdown(pipeline_diagram_html(), unsafe_allow_html=True)
 tab_ask, tab_race, tab_index = st.tabs(["Ask", "Race", "Index"])
 
 with tab_ask:
@@ -133,20 +195,22 @@ with tab_ask:
         scored = retrieve_scored(searcher, question)
         t1 = time.perf_counter()
         rc = [rag.RetrievedChunk(text=c, score=s, index=i) for i, (c, s) in enumerate(scored)]
-        answer, used_llm, warning = rag.generate_answer(question, rc)
-        t2 = time.perf_counter()
+        used_llm = bool(os.environ.get("GEMINI_API_KEY"))
 
         st.subheader("Answer")
-        st.write(answer)
-        if warning:
-            st.caption(warning)
+        st.write_stream(rag.stream_answer(question, rc))
+        t2 = time.perf_counter()
 
-        with st.expander("How was this answer generated?", expanded=True):
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Retrieval", f"{(t1 - t0) * 1000:.0f} ms")
-            c2.metric("Generation", f"{(t2 - t1) * 1000:.0f} ms")
-            c3.metric("Total", f"{(t2 - t0) * 1000:.0f} ms")
-            st.caption(f"LLM used: {'yes' if used_llm else 'no (stub answer)'}")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Retrieval", f"{(t1 - t0) * 1000:.0f} ms")
+        c2.metric("Generation", f"{(t2 - t1) * 1000:.0f} ms")
+        c3.metric("Total", f"{(t2 - t0) * 1000:.0f} ms")
+        st.caption(f"LLM used: {'yes' if used_llm else 'no (stub answer)'}")
+
+        with st.expander("Final prompt sent to the LLM"):
+            st.code(rag.build_prompt(question, rc), language="text")
+
+        with st.expander("Sources", expanded=True):
             for rank, (chunk, s) in enumerate(scored, start=1):
                 st.markdown(f"**Source {rank}** · similarity `{s:.3f}`")
                 st.progress(max(0.0, min(1.0, float(s))))
@@ -157,7 +221,8 @@ with tab_race:
     st.caption("Score the pipeline on the benchmark (120 questions, SQuAD-based). "
                "Edit pipeline.py, then run again. Keep TOP_K the same across the room.")
     if st.button("Run benchmark", type="primary"):
-        _, bench_searcher = build_bench(pipeline_sig())
+        _, bench_searcher = staged_build(
+            "Indexing the benchmark corpus...", build_bench, pipeline_sig())
         gold = load_gold(GOLD)
         with st.spinner(f"Scoring {len(gold)} questions..."):
             def retrieve_fn(q):
