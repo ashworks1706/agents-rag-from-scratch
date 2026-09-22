@@ -10,10 +10,11 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-That's it. The app opens in your browser with two tabs:
+That's it. The app opens in your browser with three tabs:
 
 - **Ask** — ask a question, get an answer with its sources, scores, and timing.
 - **Race** — score your setup on a fixed question set and try to beat others.
+- **Index** — see the chunks the current document was split into.
 
 Works on your laptop, in GitHub Codespaces, or deployed (see below).
 
@@ -63,7 +64,7 @@ Open any file to see how that method works.
 ## The race
 
 Pick a strategy in `pipeline.py`, open the **Race** tab, and click **Run
-benchmark**. It scores 108 questions over a SQuAD-based corpus:
+benchmark**. It scores 120 questions over a hard SQuAD-based corpus:
 
 - **Recall@k** — did the answer show up in your top results? (main score)
 - **MRR** — did it rank the right chunk high? (tiebreaker)

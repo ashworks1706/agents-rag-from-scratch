@@ -22,16 +22,25 @@ different chunk sizes are compared fairly.
 
 ## The data
 
-The questions and corpus come from **SQuAD 1.1** (Stanford Question Answering
-Dataset): 108 questions over ~150 paragraphs from six Wikipedia articles (Nikola
-Tesla, oxygen, the Amazon rainforest, the Apollo program, Super Bowl 50, and
-steam engines). SQuAD answers are exact text spans, which is why the substring
-check works.
+From **SQuAD 1.1** (Stanford Question Answering Dataset): 120 questions over ~900
+Wikipedia paragraphs (about 1,900 chunks). It is a **hard subset** — questions
+that plain keyword search (BM25) already ranks first are removed, so you have to
+retrieve well to score. As a baseline, BM25 alone reaches only Recall@3 ≈ 0.41.
 
-- `corpus.txt` — the paragraphs (the document you retrieve from).
-- `gold.json` — the questions and their answers.
+- `corpus.txt` — the paragraphs you retrieve from.
+- `gold.json` — the questions and answers.
 - `leaderboard.md` — your results.
 
+## Regenerate or find the best pipeline
+
+```bash
+python benchmark/build_dataset.py   # rebuild corpus.txt + gold.json from SQuAD (Hugging Face, or GitHub fallback)
+python benchmark/sweep.py           # score every splitter x search x rerank combo, print the winner
+```
+
+`sweep.py` needs the models (Hugging Face download), so run it where there is
+internet, e.g. Codespaces.
+
 Source: Rajpurkar et al., 2016, *SQuAD: 100,000+ Questions for Machine
-Comprehension of Text*. This subset is derived from the SQuAD dev set, which is
-released under CC BY-SA 4.0 and kept under the same license here.
+Comprehension of Text*. SQuAD is released under CC BY-SA 4.0; this subset keeps
+the same license.

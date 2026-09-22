@@ -1,305 +1,49 @@
 {
-  "source": "SQuAD 1.1 dev (Rajpurkar et al., 2016), CC BY-SA 4.0",
+  "source": "SQuAD 1.1 dev (Rajpurkar et al., 2016), CC BY-SA 4.0 \u2014 hard subset (gimmes removed)",
   "corpus_file": "corpus.txt",
   "questions": [
     {
-      "question": "In what year was Nikola Tesla born?",
-      "answer": "1856"
+      "question": "What modern city is located on the original Huguenot colony?",
+      "answer": "Cape Town"
     },
     {
-      "question": "What was Nikola Tesla's ethnicity?",
-      "answer": "Serbian"
+      "question": "What team received the opening kickoff?",
+      "answer": "Denver"
     },
     {
-      "question": "In what year did Nikola Tesla emigrate to the United States?",
-      "answer": "1884"
+      "question": "Who did Tesla try to get money from?",
+      "answer": "Morgan"
     },
     {
-      "question": "Who did Tesla work for in the 1880s?",
-      "answer": "Thomas Edison"
+      "question": "Into what religion was Martin Luther baptized?",
+      "answer": "Catholic"
     },
     {
-      "question": "When did Tesla discover the possibility of wireless connectivity?",
-      "answer": "1893"
+      "question": "What kind of fiction is Tesla's work featured in?",
+      "answer": "science fiction"
     },
     {
-      "question": "Were Tesla's experiments high-voltage or low-voltage?",
-      "answer": "high-voltage"
+      "question": "Luther treated Jews in a like way as he treated what group?",
+      "answer": "Anabaptists"
     },
     {
-      "question": "What year did Tesla die?",
-      "answer": "1943"
+      "question": "What does man's justification depend on in faith?",
+      "answer": "charity and good works"
     },
     {
-      "question": "What was named \"The Tesla\" in his honor?",
-      "answer": "SI unit of magnetic flux density"
+      "question": "What yard line did the Broncos stop the Panthers on in their first offensive drive of Super Bowl 50?",
+      "answer": "26-yard line"
     },
     {
-      "question": "What modern-day country was Tesla born in?",
-      "answer": "Croatia"
+      "question": "Assuming that T represents a polynomial in T(n), what is the term given to the corresponding algorithm?",
+      "answer": "polynomial time algorithm"
     },
     {
-      "question": "What was the occupation of Tesla's father?",
-      "answer": "priest"
+      "question": "Who played a part in the development of radar in France?",
+      "answer": "\u00c9mile Girardeau"
     },
     {
-      "question": "How many siblings did Tesla have?",
-      "answer": "four"
-    },
-    {
-      "question": "What language did Tesla study while in school?",
-      "answer": "German"
-    },
-    {
-      "question": "Who was Tesla influenced by while in school?",
-      "answer": "Martin Sekuli\u0107"
-    },
-    {
-      "question": "What language were classes held in at Tesla's school?",
-      "answer": "German"
-    },
-    {
-      "question": "What disease did Tesla contract in 1873?",
-      "answer": "cholera"
-    },
-    {
-      "question": "How long was he bedridden with cholera?",
-      "answer": "nine months"
-    },
-    {
-      "question": "Where did Tesla run to avoid the army draft?",
-      "answer": "Tomingaj"
-    },
-    {
-      "question": "Whose works helped Tesla recover from illness?",
-      "answer": "Mark Twain"
-    },
-    {
-      "question": "The atomic number of the periodic table for oxygen?",
-      "answer": "8"
-    },
-    {
-      "question": "What is the second most abundant element?",
-      "answer": "helium"
-    },
-    {
-      "question": "Oxygen is released in cellular respiration by?",
-      "answer": "photosynthesis"
-    },
-    {
-      "question": "Photosynthesis uses which energy to for oxygen from water?",
-      "answer": "sunlight"
-    },
-    {
-      "question": "Who proved that air is necessary for combustion?",
-      "answer": "Robert Boyle"
-    },
-    {
-      "question": "What English chemist showed that fire only needed nitoaereus?",
-      "answer": "John Mayow"
-    },
-    {
-      "question": "\"An Account of Further Discoveries in Air\" was published by who in 1775?",
-      "answer": "Joseph Priestley"
-    },
-    {
-      "question": "What was the occupation of Joseph Priestley?",
-      "answer": "clergyman"
-    },
-    {
-      "question": "What inventor built on to the findings of Philo of  Byzantium?",
-      "answer": "Leonardo da Vinci"
-    },
-    {
-      "question": "Pneumatica was written by what Greek writer?",
-      "answer": "Philo of Byzantium"
-    },
-    {
-      "question": "What is needed to make combustion happen?",
-      "answer": "heat or a spark"
-    },
-    {
-      "question": "Combustion is caused by an oxidant and a fuel. What role does oxygen play in combustion?",
-      "answer": "Oxygen is the oxidant"
-    },
-    {
-      "question": "What chemical element was the cause of the Apollo 1 disastrous outcome?",
-      "answer": "pure O"
-    },
-    {
-      "question": "______ In both liquid and gas form can fastly result in an exlposion.",
-      "answer": "oxygen"
-    },
-    {
-      "question": "Granite is made up largely of what chemical compound?",
-      "answer": "oxides of silicon"
-    },
-    {
-      "question": "Oxygen exists in the atmosphere by way of what?",
-      "answer": "carbon dioxide"
-    },
-    {
-      "question": "What did John Dalton think that all elements were in number present in compounds?",
-      "answer": "monatomic"
-    },
-    {
-      "question": "What did Dalton think the atomic ratios were between atoms in compounds?",
-      "answer": "simplest"
-    },
-    {
-      "question": "Which name is also used to describe the Amazon rainforest in English?",
-      "answer": "also known in English as Amazonia or the Amazon Jungle,"
-    },
-    {
-      "question": "How many nations control this region in total?",
-      "answer": "This region includes territory belonging to nine nations."
-    },
-    {
-      "question": "What may have caused rainforests to grow across South America?",
-      "answer": "the extinction of the dinosaurs and the wetter climate"
-    },
-    {
-      "question": "How many degrees south did the Amazon rainforest reach from 66-34 Mya?",
-      "answer": "45"
-    },
-    {
-      "question": "In which direction did the water on the eastern side flow?",
-      "answer": "Water on the eastern side flowed toward the Atlantic,"
-    },
-    {
-      "question": "What is the name of the basin that was created from a enclosed lake?",
-      "answer": "Solim\u00f5es Basin"
-    },
-    {
-      "question": "What does LGM stands for?",
-      "answer": "Last Glacial Maximum"
-    },
-    {
-      "question": "How has this debate been proven?",
-      "answer": "This debate has proved difficult"
-    },
-    {
-      "question": "What is the name of the satellite that measured the amount of dust?",
-      "answer": "CALIPSO"
-    },
-    {
-      "question": "How many tons of dust are blown from the Sahara each year?",
-      "answer": "182 million tons"
-    },
-    {
-      "question": "What is the name of the book written by Archeologist Betty Meggers?",
-      "answer": "Man and Culture in a Counterfeit Paradise"
-    },
-    {
-      "question": "What is the maximum square miles did Betty Meggers claim that can be sustained in the rainforest?",
-      "answer": "0.52/sq mi"
-    },
-    {
-      "question": "Who was the first European to travel the Amazon River?",
-      "answer": "Francisco de Orellana"
-    },
-    {
-      "question": "During what time did civilization in the Amazon was flourishing when Orellana made his observations?",
-      "answer": "1540s"
-    },
-    {
-      "question": "What is terra preta called?",
-      "answer": "black earth"
-    },
-    {
-      "question": "How much is terra preta distributed over the Amazon forest?",
-      "answer": "large areas"
-    },
-    {
-      "question": "How many species of insects are known in the region?",
-      "answer": "2.5 million"
-    },
-    {
-      "question": "What portion of bird species make up the world's total live in the rainforest?",
-      "answer": "One in five"
-    },
-    {
-      "question": "What project put the first Americans into space?",
-      "answer": "Project Mercury"
-    },
-    {
-      "question": "What program was created to carry out these projects and missions?",
-      "answer": "National Aeronautics and Space Administration (NASA)"
-    },
-    {
-      "question": "How long did Project Apollo run?",
-      "answer": "1961 to 1972"
-    },
-    {
-      "question": "What program helped develop space travel techniques that Project Apollo used?",
-      "answer": "Gemini program"
-    },
-    {
-      "question": "In what year did the Apollo 1 cabin fire occur?",
-      "answer": "1967"
-    },
-    {
-      "question": "What type of launch was happening during the Apollo 1 incident?",
-      "answer": "prelaunch test"
-    },
-    {
-      "question": "What was the first spacecraft to orbit another celestial body?",
-      "answer": "Apollo 8"
-    },
-    {
-      "question": "What Apollo mission was the sixth moon landing?",
-      "answer": "Apollo 17"
-    },
-    {
-      "question": "How many people could the Mercury capsule hold?",
-      "answer": "one"
-    },
-    {
-      "question": "How many people could Apollo be projected to hold?",
-      "answer": "three"
-    },
-    {
-      "question": "In what year was the Apollo program announced?",
-      "answer": "1960"
-    },
-    {
-      "question": "Who led the in house design studies for NASA?",
-      "answer": "Maxime Faget"
-    },
-    {
-      "question": "Who was elected President in November 1960?",
-      "answer": "John F. Kennedy"
-    },
-    {
-      "question": "Against what country was Kennedy promising superiority over?",
-      "answer": "Soviet Union"
-    },
-    {
-      "question": "Who was the first person in space?",
-      "answer": "Yuri Gagarin"
-    },
-    {
-      "question": "From what country did the first person in space come from?",
-      "answer": "Soviet Union"
-    },
-    {
-      "question": "What month and day did Kennedy message his vice president about the status of the program?",
-      "answer": "April 20"
-    },
-    {
-      "question": "Who was Kennedy's vice president?",
-      "answer": "Lyndon B. Johnson"
-    },
-    {
-      "question": "Which NFL team represented the AFC at Super Bowl 50?",
-      "answer": "Denver Broncos"
-    },
-    {
-      "question": "Which NFL team represented the NFC at Super Bowl 50?",
-      "answer": "Carolina Panthers"
-    },
-    {
-      "question": "Which Carolina Panthers player was named Most Valuable Player?",
+      "question": "Who is the quarterback for the Panthers?",
       "answer": "Cam Newton"
     },
     {
@@ -307,132 +51,436 @@
       "answer": "8"
     },
     {
-      "question": "Who was the Super Bowl 50 MVP?",
-      "answer": "Von Miller"
+      "question": "In what state were the original launching facilities for missions?",
+      "answer": "Florida"
     },
     {
-      "question": "How many fumbles did Von Miller force in Super Bowl 50?",
-      "answer": "2"
+      "question": "Who was the leader when the Franks entered the Euphrates valley?",
+      "answer": "Oursel"
     },
     {
-      "question": "Which network broadcasted Super Bowl 50 in the U.S.?",
-      "answer": "CBS"
+      "question": "What was the patent number for Tesla's final patent?",
+      "answer": "U.S. Patent 1,655,114"
     },
     {
-      "question": "What was the average cost for a 30 second commercial during Super Bowl 50?",
-      "answer": "$5 million"
+      "question": "In what years did Bach use more of Luther's hymns in his compositions?",
+      "answer": "1724 to 1725"
     },
     {
-      "question": "Who was the NFL Commissioner in early 2012?",
-      "answer": "Roger Goodell"
+      "question": "Was the LM intended to return to Earth at all?",
+      "answer": "Not"
     },
     {
-      "question": "Which Super Bowl did Roger Goodell speak about?",
-      "answer": "the 50th Super Bowl"
+      "question": "What would a teacher assess the levels of a student on?",
+      "answer": "particular skills"
     },
     {
-      "question": "Which Louisiana venue was one of three considered for Super Bowl 50?",
-      "answer": "New Orleans' Mercedes-Benz Superdome"
+      "question": "How many men were in Robert's army?",
+      "answer": "30,000"
     },
     {
-      "question": "Which Florida venue was one of three considered for Super Bowl 50?",
-      "answer": "Miami's Sun Life Stadium"
+      "question": "What product was notably shipped in vessels equipped with double and triple expansion engines?",
+      "answer": "coal"
     },
     {
-      "question": "When were the two finalists for hosting Super Bowl 50 announced?",
-      "answer": "October 16, 2012"
+      "question": "In what areas does most of the learning take place?",
+      "answer": "self-study and problem solving"
     },
     {
-      "question": "How many times has the South Florida/Miami area hosted the Super Bowl?",
-      "answer": "10"
+      "question": "What is a particular problem in biology that would benefit from determining that P = NP?",
+      "answer": "protein structure prediction"
     },
     {
-      "question": "When was Levi's Stadium awarded the right to host Super Bowl 50?",
-      "answer": "May 21, 2013"
+      "question": "What river runs through Warsaw?",
+      "answer": "Vistula River"
     },
     {
-      "question": "Who voted on the venue for Super Bowl 50?",
-      "answer": "NFL owners"
+      "question": "Whose theory did Tesla disagree with?",
+      "answer": "Einstein's"
     },
     {
-      "question": "Who coached each Super Bowl 50 participant in their most recent Super Bowl appearance prior to Super Bowl 50?",
-      "answer": "John Fox"
+      "question": "When was the last Super Bowl in California?",
+      "answer": "2003"
     },
     {
-      "question": "How many NFL teams have finished the regular season with one loss?",
-      "answer": "ten"
+      "question": "What was the hymn based on?",
+      "answer": "Veni redemptor gentium"
     },
     {
-      "question": "Along with geothermal and nuclear, what is a notable non-combustion heat source?",
-      "answer": "solar"
+      "question": "Name a luxury division of Toyota.",
+      "answer": "Lexus"
     },
     {
-      "question": "What ideal thermodynamic cycle analyzes the process by which steam engines work?",
-      "answer": "Rankine"
+      "question": "Who wrote \"Walking in Fresno?\"",
+      "answer": "Bill Aken"
     },
     {
-      "question": "What was the first true engine that was commercially successful?",
-      "answer": "atmospheric engine"
+      "question": "What fueled Luther's  concept of Christ and His Salvation?",
+      "answer": "sale of indulgences"
     },
     {
-      "question": "Who was the inventor of the atmospheric engine?",
-      "answer": "Thomas Newcomen"
+      "question": "Warsaw Summer Jazz Days is one of the many what hosted by Warsaw?",
+      "answer": "festivals"
     },
     {
-      "question": "In what country was a full-scale working railway steam locomotive first invented?",
-      "answer": "United Kingdom"
+      "question": "For how long did Tesla receive this compensation?",
+      "answer": "for the rest of Tesla's life"
     },
     {
-      "question": "On what date did the first railway trip in the world occur?",
-      "answer": "21 February 1804"
+      "question": "When did Japan release a statement to tell Israelis to withdraw from the Palestine?",
+      "answer": "November 22"
     },
     {
-      "question": "What device is used to recycle the boiler water in most steam engines?",
-      "answer": "water pump"
+      "question": "What was the date of Tesla's death?",
+      "answer": "7 January 1943"
     },
     {
-      "question": "What types of pumps are typically used in industrial boilers?",
-      "answer": "multi-stage centrifugal"
+      "question": "What is the most well-known algorithm associated with the integer factorization problem?",
+      "answer": "the general number field sieve"
     },
     {
-      "question": "How many expansion stages are used by the triple expansion engine?",
-      "answer": "three"
+      "question": "What other visual phenomena accompanied Tesla's visions?",
+      "answer": "blinding flashes of light"
     },
     {
-      "question": "What are engines using four expansion stages known as?",
-      "answer": "quadruple expansion engines"
+      "question": "What does coastal beriods use as teeth?",
+      "answer": "groups of large, stiffened cilia"
     },
     {
-      "question": "Along with poppet valve gears, what type of gears utilized separate admission and exhaust valves to give ideal events?",
-      "answer": "Corliss"
+      "question": "From what country did the first person in space come from?",
+      "answer": "Soviet Union"
     },
     {
-      "question": "Along with Stephenson and Walschaerts, what is an example of a simple motion?",
-      "answer": "Joy"
+      "question": "How much did it cost to build the stadium where Super Bowl 50 was played?",
+      "answer": "$1.2 billion"
     },
     {
-      "question": "What are sometimes present in the boiler's firebox crown?",
-      "answer": "Lead fusible plugs"
+      "question": "Which nation contains the majority of the amazon forest?",
+      "answer": "Brazil"
     },
     {
-      "question": "What happens to the lead fusible plugs if the water level of the boiler drops?",
-      "answer": "melts"
+      "question": "How recently has the homes in Fresno been restored?",
+      "answer": "in recent decades"
     },
     {
-      "question": "Who patented a steam engine in 1781?",
-      "answer": "James Watt"
+      "question": "What was the name of the Norman castle?",
+      "answer": "Afranji"
+    },
+    {
+      "question": "After rejecting compulsory confession, what did Luther call for?",
+      "answer": "private confession and absolution"
+    },
+    {
+      "question": "What did Tesla establish following his Colorado experiments?",
+      "answer": "Wardenclyffe"
+    },
+    {
+      "question": "Cities that anchor the regions are often the hub for what kind of activity?",
+      "answer": "economic"
+    },
+    {
+      "question": "What is the longest time that a teaching certificate is good for?",
+      "answer": "ten years"
+    },
+    {
+      "question": "What did Microsoft announce that it would rename Sky Drive to?",
+      "answer": "OneDrive"
+    },
+    {
+      "question": "How many tons of Saharan dust falls on the Amazon Basin each year?",
+      "answer": "27.7 million tons"
+    },
+    {
+      "question": "How many interceptions did Manning have at the end of the game?",
+      "answer": "one"
+    },
+    {
+      "question": "Who notably improved the Savery water pump?",
+      "answer": "Bento de Moura Portugal"
+    },
+    {
+      "question": "What armed group stopped the uprising at Ballarat?",
+      "answer": "British troops"
+    },
+    {
+      "question": "What was the final score of the game between the Broncos and Steelers?",
+      "answer": "23\u201316"
+    },
+    {
+      "question": "Who lost to the Broncos in the AFC Championship?",
+      "answer": "New England Patriots"
+    },
+    {
+      "question": "What is the largest type of misconduct being reviewed by the media?",
+      "answer": "sexual misconduct"
+    },
+    {
+      "question": "How old was Elway during his Super Bowl XXXIII win?",
+      "answer": "38"
     },
     {
       "question": "What sort of motion did Watt's steam engine continuously produce?",
       "answer": "rotary"
     },
     {
-      "question": "In what century did the history of the steam engine begin?",
-      "answer": "first"
+      "question": "How big can ctenophora grow?",
+      "answer": "1.5 m (4 ft 11 in)"
     },
     {
-      "question": "Who conceptualized the aeolipile?",
-      "answer": "Hero of Alexandria"
+      "question": "The legislative body, the Council, are made up of what type of individuals?",
+      "answer": "different ministers of the member states"
+    },
+    {
+      "question": "What did the sparks do to the insulation?",
+      "answer": "destroy"
+    },
+    {
+      "question": "Who was Boleslaw II of Masovia?",
+      "answer": "The Prince of P\u0142ock"
+    },
+    {
+      "question": "What characteristic of oxygen causes it to form bonds with other elements?",
+      "answer": "electronegativity"
+    },
+    {
+      "question": "Who created an engine using high pressure steam in 1801?",
+      "answer": "Oliver Evans"
+    },
+    {
+      "question": "On what date did the first railway trip in the world occur?",
+      "answer": "21 February 1804"
+    },
+    {
+      "question": "Downtown Burbank is an example of what kind of district?",
+      "answer": "business"
+    },
+    {
+      "question": "What made Luther even more short tempered than usual?",
+      "answer": "poor physical health"
+    },
+    {
+      "question": "What type of venue is the Teatr Wielki?",
+      "answer": "musical"
+    },
+    {
+      "question": "How many 2015 season interceptions did the Panthers' defense get?",
+      "answer": "24"
+    },
+    {
+      "question": "How many intercpetions did Newton have in Super Bowl 50?",
+      "answer": "one"
+    },
+    {
+      "question": "What is the United States busiest commercial port?",
+      "answer": "Port of Los Angeles"
+    },
+    {
+      "question": "One of the sites, Merceds-Benz Superdome, is located where?",
+      "answer": "New Orleans"
+    },
+    {
+      "question": "What is the youngest student a teacher might have?",
+      "answer": "infants"
+    },
+    {
+      "question": "What were these indulgences supposed to grant the giver?",
+      "answer": "salvation"
+    },
+    {
+      "question": "Which city does the Hollywood district belong to?",
+      "answer": "Los Angeles"
+    },
+    {
+      "question": "Decision problems capable of being solved by a deterministic Turing machine while maintaining adherence to polynomial time belong to what class?",
+      "answer": "complexity class P"
+    },
+    {
+      "question": "What implication can be derived for P and NP if P and co-NP are established to be unequal?",
+      "answer": "P is not equal to NP"
+    },
+    {
+      "question": "What country has a problem with classroom discipline, even though scores on tests are high?",
+      "answer": "Japan"
+    },
+    {
+      "question": "What entity enforces the Charter of Fundamental Rights of the European Union?",
+      "answer": "European Court of Justice"
+    },
+    {
+      "question": "Families with French names in South Africa speak what language today?",
+      "answer": "Afrikaans"
+    },
+    {
+      "question": "What was Henry IV known as before taking the throne?",
+      "answer": "Henry of Navarre"
+    },
+    {
+      "question": "On what day does the Super Bowl media day traditionally take place?",
+      "answer": "Tuesday"
+    },
+    {
+      "question": "Which rail line operates in Melbourne?",
+      "answer": "Metro Trains Melbourne"
+    },
+    {
+      "question": "Where did the Panthers practice at for Super Bowl 50?",
+      "answer": "San Jose State practice facility"
+    },
+    {
+      "question": "What radio station is located at 103.5FM on the dial in Denver?",
+      "answer": "KRFX"
+    },
+    {
+      "question": "Combustion is caused by an oxidant and a fuel. What role does oxygen play in combustion?",
+      "answer": "Oxygen is the oxidant"
+    },
+    {
+      "question": "How many people live in the greater metropolitan area?",
+      "answer": "2.666 million residents"
+    },
+    {
+      "question": "Were Tesla's experiments high-voltage or low-voltage?",
+      "answer": "high-voltage"
+    },
+    {
+      "question": "What is a descriptive term for a low-to-high energy bond?",
+      "answer": "Aufbau"
+    },
+    {
+      "question": "Who else observed that Luther view of souls was different form later views?",
+      "answer": "Gerhard. Lessing"
+    },
+    {
+      "question": "What group bought Cyprus after the Norman conquest?",
+      "answer": "Knights Templar"
+    },
+    {
+      "question": "Where did Tesla teach in Gospic?",
+      "answer": "Higher Real Gymnasium"
+    },
+    {
+      "question": "How many times has a Super Bowl taken place at Miami's Sun Life Stadium?",
+      "answer": "two"
+    },
+    {
+      "question": "How long does it take for new areas to have significant oil production?",
+      "answer": "five to ten years"
+    },
+    {
+      "question": "Who was the Broncos' leading rusher for the 2015 season?",
+      "answer": "C. J. Anderson"
+    },
+    {
+      "question": "What did he find that could constitute a hazard?",
+      "answer": "nothing"
+    },
+    {
+      "question": "Who was the head coach of the Broncos in Super Bowl XLVIII?",
+      "answer": "John Fox"
+    },
+    {
+      "question": "What platform was Sentanta Sports planning on launching on?",
+      "answer": "digital terrestrial"
+    },
+    {
+      "question": "Other than many sunny days, what characteristic is typical for the climate in souther California?",
+      "answer": "infrequent rain"
+    },
+    {
+      "question": "Where was Tracy Wolfson announcing from during the Super Bowl 50 game?",
+      "answer": "sidelines"
+    },
+    {
+      "question": "What percentage of funds were given as charitable funds to causes in and around San Francisco?",
+      "answer": "25 percent"
+    },
+    {
+      "question": "When did Astor provide the money?",
+      "answer": "1899"
+    },
+    {
+      "question": "Where was the NFL Experience held for the 2015 season?",
+      "answer": "Moscone Center"
+    },
+    {
+      "question": "What does the acronym LEM stand for?",
+      "answer": "Lunar Excursion Module"
+    },
+    {
+      "question": "When did the partnership between Tesla, Lane and Vail form?",
+      "answer": "1886"
+    },
+    {
+      "question": "What was Luther's force within the Reformation?",
+      "answer": "conservative"
+    },
+    {
+      "question": "What persons were not allowed to settle in New France?",
+      "answer": "non-Catholics"
+    },
+    {
+      "question": "What type of theatre is the Warsaw Fotoplastikon?",
+      "answer": "stereoscopic"
+    },
+    {
+      "question": "Juvenile platyctenids act like what?",
+      "answer": "more like true larvae"
+    },
+    {
+      "question": "By what document did the Huguenots confess their faith to the Portuguese in Brazil?",
+      "answer": "the Guanabara Confession of Faith"
+    },
+    {
+      "question": "Where was Luther born?",
+      "answer": "Eisleben, Saxony"
+    },
+    {
+      "question": "What Revolutionary War midnight rider was a Huguenot descendant?",
+      "answer": "Paul Revere"
+    },
+    {
+      "question": "What does the original manuscript show?",
+      "answer": "multiple revisions"
+    },
+    {
+      "question": "Who defeated the rebels at the Battle of Frankenhausen?",
+      "answer": "Swabian League"
+    },
+    {
+      "question": "What station aired the Super Bowl?",
+      "answer": "CBS"
+    },
+    {
+      "question": "Who scored the Panthers first touchdown?",
+      "answer": "Jonathan Stewart"
+    },
+    {
+      "question": "What are the weakly filled higher orbitals of oxygen?",
+      "answer": "antibonding"
+    },
+    {
+      "question": "After the Oligocene period, under what period did the amazon rainforest begin to expand?",
+      "answer": "Middle Miocene"
+    },
+    {
+      "question": "How many outputs are expected for each input in a function problem?",
+      "answer": "a single output"
+    },
+    {
+      "question": "Who was Edward the Confessor's half-brother?",
+      "answer": "Harthacnut"
+    },
+    {
+      "question": "The number of new Huguenot colonists declined after what year?",
+      "answer": "1700"
+    },
+    {
+      "question": "Where is Brazil ranked globally in soybean production?",
+      "answer": "second-largest global producer"
+    },
+    {
+      "question": "In what year did one individual suggest classifying the trees of the Amazon into four categories?",
+      "answer": "2006"
     }
   ]
 }
