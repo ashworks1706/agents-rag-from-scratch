@@ -214,17 +214,33 @@ with tab_race:
             "benchmark", lambda: open(CORPUS, encoding="utf-8").read(),
             pipeline_sig(), "Indexing the benchmark corpus...")
         gold = load_gold(GOLD)
-        with st.spinner(f"Scoring {len(gold)} questions..."):
-            def retrieve_fn(q):
-                return [c for c, _ in retrieve_scored(bench_searcher, q)]
 
-            generate_fn = None
-            if os.environ.get("GEMINI_API_KEY"):
-                def generate_fn(q, top):
-                    rc = [rag.RetrievedChunk(text=c, score=0.0, index=i) for i, c in enumerate(top)]
-                    return rag.generate_answer(q, rc)[0]
+        def retrieve_fn(q):
+            return [c for c, _ in retrieve_scored(bench_searcher, q)]
 
-            result = score(gold, retrieve_fn, generate_fn)
+        generate_fn = None
+        if os.environ.get("GEMINI_API_KEY"):
+            def generate_fn(q, top):
+                rc = [rag.RetrievedChunk(text=c, score=0.0, index=i) for i, c in enumerate(top)]
+                return rag.generate_answer(q, rc)[0]
+
+        bar = st.progress(0.0)
+        line = st.empty()
+        running = {"hits": 0}
+
+        def on_progress(i, n, row):
+            if row["found"]:
+                running["hits"] += 1
+            mark = f"rank {row['rank']}" if row["found"] else "missed"
+            bar.progress(i / n)
+            line.markdown(
+                f"`{i:>3}/{n}`  hits `{running['hits']}`  ·  "
+                f"{mark} — {row['question'][:70]}"
+            )
+
+        result = score(gold, retrieve_fn, generate_fn, on_progress=on_progress)
+        bar.empty()
+        line.empty()
 
         c1, c2, c3 = st.columns(3)
         c1.metric(f"Recall@{pipeline.TOP_K}", f"{result['recall']:.3f}", f"{result['hits']}/{result['n']}", delta_color="off")
