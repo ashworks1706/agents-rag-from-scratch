@@ -1,11 +1,12 @@
 """Streamlit app for the Modern RAG workshop.
 
-Two tabs, both driven by the method files in splitting/ embedding/ indexing/
-searching/ reranking/:
+The pipeline is defined in pipeline.py; edit that file to change methods. This
+app just runs it, in two tabs:
   Ask   - ask a question, see the grounded answer, sources, scores, and latency.
-  Race  - pick a strategy and score it on the gold question set (Recall@k, MRR).
+  Race  - score the current pipeline on the gold question set (Recall@k, MRR).
 """
 
+import importlib
 import os
 import sys
 import time
@@ -15,9 +16,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import streamlit as st
 
 from utils import load_pdf
-from utils.dispatch import get_chunks, build_search
 from utils.benchmark import load_gold, score
 import rag
+import pipeline
+
+importlib.reload(pipeline)  # pick up edits to pipeline.py on each rerun
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_DOC = os.path.join(APP_DIR, "sample_document.pdf")
@@ -32,42 +35,46 @@ except Exception:
     pass
 
 
+def pipeline_sig():
+    """Identity of the current pipeline, so caches rebuild when you edit pipeline.py."""
+    return (pipeline.split.__module__, pipeline.Search.__module__, pipeline.Search.__name__,
+            pipeline.CHUNK_SIZE, pipeline.OVERLAP)
+
+
 @st.cache_resource(show_spinner="Indexing the document...")
-def build(doc_path, splitter, chunk_size, overlap, search):
-    text = load_pdf(doc_path)
-    chunks = get_chunks(splitter, text, chunk_size, overlap)
-    searcher = build_search(search, chunks)
-    return chunks, searcher
+def build_cached(doc_path, sig):
+    return pipeline.build(load_pdf(doc_path))
 
 
 @st.cache_resource(show_spinner="Loading reranker...")
-def get_reranker():
-    from reranking.cross_encoder import Reranker
-    return Reranker()
+def get_reranker(name):
+    return pipeline.Reranker()
 
 
-def retrieve_scored(searcher, query, k, rerank, pool=20):
-    """Return [(chunk, score)] for the top k, optionally reranked."""
-    results = searcher.search(query, k=(pool if rerank else k))
-    if isinstance(results, tuple):  # router returns (choice, results)
+def retrieve_scored(searcher, query):
+    n = pipeline.TOP_K * 4 if pipeline.USE_RERANKER else pipeline.TOP_K
+    results = searcher.search(query, k=n)
+    if isinstance(results, tuple):
         results = results[1]
-    if rerank:
+    if pipeline.USE_RERANKER:
         candidates = [c for c, _ in results]
-        return get_reranker().rerank(query, candidates, k=k)
-    return results
+        results = get_reranker(pipeline.Reranker.__name__).rerank(query, candidates, k=pipeline.TOP_K)
+    return results[:pipeline.TOP_K]
 
 
 st.title("🔎 Modern RAG in Practice")
 
 with st.sidebar:
     st.header("Pipeline")
-    splitter = st.selectbox("Splitter", ["recursive", "character", "token_based", "sentence_nltk"])
-    chunk_size = st.slider("Chunk size", 100, 1000, 500, step=50)
-    overlap = st.slider("Overlap", 0, 300, 100, step=25)
-    search = st.selectbox("Search", ["semantic", "bm25", "hybrid", "query_fusion", "rrf", "ensemble", "router"])
-    rerank = st.checkbox("Cross-encoder rerank")
-    k = st.slider("Top-k", 1, 8, 3)
-
+    st.write("Edit **`pipeline.py`** to change the splitter, search method, or reranker, then save.")
+    st.code(
+        f"split    = {pipeline.split.__module__.split('.')[-1]}\n"
+        f"search   = {pipeline.Search.__module__.split('.')[-1]}\n"
+        f"chunk    = {pipeline.CHUNK_SIZE} / {pipeline.OVERLAP}\n"
+        f"top_k    = {pipeline.TOP_K}\n"
+        f"rerank   = {pipeline.USE_RERANKER}",
+        language="text",
+    )
     st.divider()
     uploaded = st.file_uploader("Document (optional PDF)", type=["pdf"])
     if os.environ.get("GEMINI_API_KEY"):
@@ -81,9 +88,8 @@ if uploaded is not None:
     with open(doc_path, "wb") as fh:
         fh.write(uploaded.getvalue())
 
-chunks, searcher = build(doc_path, splitter, chunk_size, overlap, search)
-st.caption(f"{len(chunks)} chunks · splitter={splitter} · search={search}"
-           + (" · rerank" if rerank else "") + f" · k={k}")
+chunks, searcher = build_cached(doc_path, pipeline_sig())
+st.caption(f"{len(chunks)} chunks indexed.")
 
 tab_ask, tab_race = st.tabs(["Ask", "Race"])
 
@@ -91,7 +97,7 @@ with tab_ask:
     question = st.text_input("Your question", placeholder="e.g. How much does membership cost?")
     if st.button("Ask", type="primary") and question.strip():
         t0 = time.perf_counter()
-        scored = retrieve_scored(searcher, question, k, rerank)
+        scored = retrieve_scored(searcher, question)
         t1 = time.perf_counter()
         rc = [rag.RetrievedChunk(text=c, score=s, index=i) for i, (c, s) in enumerate(scored)]
         answer, used_llm, warning = rag.generate_answer(question, rc)
@@ -116,12 +122,13 @@ with tab_ask:
 
 with tab_race:
     st.write("Score the current pipeline on the gold question set. "
-             "Tune the sidebar to climb the leaderboard; keep **k** fixed for the room.")
+             "Edit `pipeline.py` to try a different strategy, then run again. "
+             "Keep **TOP_K** the same as the rest of the room.")
     if st.button("Run benchmark", type="primary"):
         gold = load_gold(GOLD)
         with st.spinner(f"Scoring {len(gold)} questions..."):
             def retrieve_fn(q):
-                return [c for c, _ in retrieve_scored(searcher, q, k, rerank)]
+                return [c for c, _ in retrieve_scored(searcher, q)]
 
             generate_fn = None
             if os.environ.get("GEMINI_API_KEY"):
@@ -132,16 +139,18 @@ with tab_race:
             result = score(gold, retrieve_fn, generate_fn)
 
         c1, c2, c3 = st.columns(3)
-        c1.metric(f"Recall@{k}", f"{result['recall']:.3f}", f"{result['hits']}/{result['n']}")
+        c1.metric(f"Recall@{pipeline.TOP_K}", f"{result['recall']:.3f}", f"{result['hits']}/{result['n']}")
         c2.metric("MRR", f"{result['mrr']:.3f}")
         if result["answer_rate"] is not None:
-            c3.metric(f"Answer@{k}", f"{result['answer_rate']:.3f}")
+            c3.metric(f"Answer@{pipeline.TOP_K}", f"{result['answer_rate']:.3f}")
         else:
             c3.caption("Answer@k needs a Gemini key")
 
-        label = f"{splitter}/{search}" + ("+rerank" if rerank else "")
-        line = f"{label:<24} Recall@{k}={result['recall']:.3f}  MRR={result['mrr']:.3f}"
+        label = f"{pipeline.split.__module__.split('.')[-1]}/{pipeline.Search.__module__.split('.')[-1]}"
+        if pipeline.USE_RERANKER:
+            label += "+rerank"
+        line = f"{label:<28} Recall@{pipeline.TOP_K}={result['recall']:.3f}  MRR={result['mrr']:.3f}"
         if result["answer_rate"] is not None:
-            line += f"  Answer@{k}={result['answer_rate']:.3f}"
-        st.caption("Copy your best line into the shared leaderboard:")
+            line += f"  Answer@{pipeline.TOP_K}={result['answer_rate']:.3f}"
+        st.caption("Copy your best line into benchmark/leaderboard.md:")
         st.code(line, language="text")

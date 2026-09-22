@@ -25,7 +25,8 @@ agents-rag-from-scratch/
 ├── workshop/
 │   ├── app.py              the Streamlit app (Ask + Race tabs)
 │   ├── rag.py              turns retrieved chunks into a Gemini answer
-│   ├── splitting/ embedding/ indexing/ searching/ reranking/   one file per method
+│   ├── pipeline.py         the pipeline you edit (imports one method per stage)
+│   ├── splitting/ embedding/ indexing/ searching/ reranking/   the method library
 │   ├── utils/             load_pdf, method dispatch, benchmark scoring
 │   ├── benchmark/         gold questions + leaderboard for the race
 │   ├── slides.pptx         the presentation deck

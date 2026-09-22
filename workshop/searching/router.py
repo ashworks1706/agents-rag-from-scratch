@@ -8,11 +8,12 @@ class RouterSearch:
         self.chunks = list(chunks)
         self.semantic = SemanticSearch(self.chunks)
         self.bm25 = BM25Search(self.chunks)
+        self.last_choice = None
 
     def route(self, query):
         return "bm25" if len(query.split()) <= 3 else "semantic"
 
     def search(self, query, k=3):
-        choice = self.route(query)
-        retriever = self.bm25 if choice == "bm25" else self.semantic
-        return choice, retriever.search(query, k=k)
+        self.last_choice = self.route(query)
+        retriever = self.bm25 if self.last_choice == "bm25" else self.semantic
+        return retriever.search(query, k=k)

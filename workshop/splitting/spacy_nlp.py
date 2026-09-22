@@ -9,7 +9,7 @@ def _nlp():
     return nlp
 
 
-def split(text, chunk_size=300):
+def split(text, chunk_size=300, overlap=0):
     doc = _nlp()(text)
     sentences = [s.text.strip() for s in doc.sents if s.text.strip()]
     chunks, current = [], ""

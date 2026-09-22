@@ -15,7 +15,7 @@ def _ensure_punkt():
                 continue
 
 
-def split(text, chunk_size=300):
+def split(text, chunk_size=300, overlap=0):
     _ensure_punkt()
     sentences = nltk.sent_tokenize(text)
     chunks, current = [], ""
