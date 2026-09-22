@@ -1,6 +1,6 @@
 # Modern RAG in Practice
 
-This is the workshop. In about 90 minutes you build a grounded AI assistant, see how retrieval actually works, and deploy it to a public URL. It is one continuous pipeline with no framework in the way. A document is loaded and split into chunks, each chunk is embedded, a question is matched against them with cosine similarity, and the top matches are passed to an LLM that answers using only that context. Retrieval, scoring, and latency are all visible along the way.
+This is the workshop. In about 90 minutes you build a grounded AI assistant, see how retrieval actually works, and deploy it to a public URL. It is built with LangChain and a FAISS vector store. A document is loaded and split into chunks, each chunk is embedded, a question is matched against them by cosine similarity in FAISS, and the top matches are passed to an LLM that answers using only that context. Retrieval, scoring, and latency are all visible along the way.
 
 ## Files
 
@@ -40,4 +40,4 @@ Each stage of the pipeline is a labeled step in the notebook (Steps 1 through 6)
 
 ## Configuration
 
-The embedding model is `all-MiniLM-L6-v2`, chosen because it is small and runs on CPU. The LLM is Gemini (`gemini-3.6-flash`) through `google-genai`, using your own key; if the model name changes, update `GEMINI_MODEL_NAME` in `rag.py`. Chunking defaults to 500-character chunks with 100 characters of overlap and returns the top 3 matches, and you can adjust all of these from the Streamlit sidebar.
+The pipeline uses LangChain: `PyMuPDFLoader` and `RecursiveCharacterTextSplitter` for loading and chunking, `langchain-huggingface` with the `all-MiniLM-L6-v2` embedding model (small, CPU-friendly), and a FAISS vector store for retrieval. The LLM is Gemini (`gemini-3.6-flash`) through `langchain-google-genai`, using your own key; if the model name changes, update `GEMINI_MODEL_NAME` in `rag.py`. Chunking defaults to 500-character chunks with 100 characters of overlap and returns the top 3 matches, and you can adjust all of these from the Streamlit sidebar.

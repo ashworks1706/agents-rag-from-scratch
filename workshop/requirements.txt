@@ -1,13 +1,10 @@
-# Modern RAG in Practice — workshop dependencies
-# Pinned loosely for teaching; Streamlit Cloud resolves compatible builds.
-
 streamlit>=1.36
-pymupdf>=1.24            # PDF text extraction (imported as fitz)
-sentence-transformers>=3.0  # all-MiniLM-L6-v2 embeddings
+pymupdf>=1.24
+langchain>=0.3
+langchain-community>=0.3
+langchain-huggingface>=0.3
+langchain-google-genai>=2.0
+langchain-text-splitters>=0.3
+faiss-cpu>=1.8
+sentence-transformers>=3.0
 numpy>=1.26
-google-genai>=0.3        # Gemini answer generation
-
-# CPU-only PyTorch keeps the Streamlit Cloud build small and fast.
-# If the default torch pull is too large on first deploy, uncomment:
-# --extra-index-url https://download.pytorch.org/whl/cpu
-# torch
