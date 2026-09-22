@@ -18,7 +18,15 @@ TOP_K = 3
 USE_RERANKER = False
 
 
-def build(text):
-    """Split the document and index it. Returns (chunks, searcher)."""
+def build(text, on_stage=None):
+    """Split the document and index it. Returns (chunks, searcher).
+
+    on_stage(name, n) is an optional hook the app uses to show progress.
+    """
     chunks = split(text, CHUNK_SIZE, OVERLAP)
-    return chunks, Search(chunks)
+    if on_stage:
+        on_stage("split", len(chunks))
+    searcher = Search(chunks)
+    if on_stage:
+        on_stage("index", len(chunks))
+    return chunks, searcher
