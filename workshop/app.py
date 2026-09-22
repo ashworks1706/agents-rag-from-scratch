@@ -1,9 +1,9 @@
 """Streamlit app for the Modern RAG workshop.
 
-The pipeline is defined in pipeline.py; edit that file to change methods. This
-app just runs it, in two tabs:
-  Ask   - ask a question about a document, see the answer, sources, and latency.
-  Race  - score the pipeline on a fixed benchmark (SQuAD-based) for Recall@k/MRR.
+Edit pipeline.py to change methods; this app runs it, in three tabs:
+  Ask    - ask a question, see the answer, sources, and latency.
+  Race   - score the pipeline on the benchmark (Recall@k / MRR).
+  Index  - see the chunks the current document was split into.
 """
 
 import importlib
@@ -13,6 +13,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import pandas as pd
 import streamlit as st
 
 from utils import load_pdf
@@ -30,7 +31,7 @@ GOLD = os.path.join(APP_DIR, "benchmark", "gold.json")
 # Paste your Google Form link here to show a "Submit feedback & scores" button.
 FEEDBACK_FORM_URL = "https://forms.gle/rYatUf94Sx1TqXFN7"
 
-st.set_page_config(page_title="Modern RAG in Practice", layout="centered")
+st.set_page_config(page_title="Modern RAG in Practice", layout="wide")
 
 st.markdown(
     """
@@ -40,6 +41,7 @@ st.markdown(
       }
       .stApp { background: #000; }
       h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
+      section[data-testid="stSidebar"] { min-width: 240px; max-width: 260px; }
       .stButton > button, .stFormSubmitButton > button {
         border-radius: 6px; border: 1px solid #2a2a2a; background: #fff; color: #000; font-weight: 600;
       }
@@ -66,7 +68,6 @@ except Exception:
 
 
 def pipeline_sig():
-    """Identity of the current pipeline, so caches rebuild when you edit pipeline.py."""
     return (pipeline.split.__module__, pipeline.Search.__module__, pipeline.Search.__name__,
             pipeline.CHUNK_SIZE, pipeline.OVERLAP)
 
@@ -97,40 +98,35 @@ def retrieve_scored(searcher, query):
     return results[:pipeline.TOP_K]
 
 
-st.title("Modern RAG in Practice")
-
+# --- sidebar (compact) ------------------------------------------------------
 with st.sidebar:
-    st.header("Pipeline")
-    st.write("Edit **`pipeline.py`** to change the splitter, search method, or reranker, then save.")
+    st.caption("PIPELINE — edit pipeline.py, save")
     st.code(
-        f"split    = {pipeline.split.__module__.split('.')[-1]}\n"
-        f"search   = {pipeline.Search.__module__.split('.')[-1]}\n"
-        f"chunk    = {pipeline.CHUNK_SIZE} / {pipeline.OVERLAP}\n"
-        f"top_k    = {pipeline.TOP_K}\n"
-        f"rerank   = {pipeline.USE_RERANKER}",
+        f"split  = {pipeline.split.__module__.split('.')[-1]}\n"
+        f"search = {pipeline.Search.__module__.split('.')[-1]}\n"
+        f"chunk  = {pipeline.CHUNK_SIZE}/{pipeline.OVERLAP}\n"
+        f"top_k  = {pipeline.TOP_K}\n"
+        f"rerank = {pipeline.USE_RERANKER}",
         language="text",
     )
-    st.divider()
-    uploaded = st.file_uploader("Ask tab document (optional PDF)", type=["pdf"])
-    if os.environ.get("GEMINI_API_KEY"):
-        st.caption("gemini: connected")
-    else:
-        st.caption("gemini: not set — answers are stubs")
+    uploaded = st.file_uploader("Ask document (PDF)", type=["pdf"], label_visibility="collapsed")
+    st.caption("gemini: connected" if os.environ.get("GEMINI_API_KEY") else "gemini: not set (stub answers)")
     if FEEDBACK_FORM_URL:
-        st.divider()
         st.link_button("Feedback & scores", FEEDBACK_FORM_URL)
 
-tab_ask, tab_race = st.tabs(["Ask", "Race"])
+# --- build the Ask document once (shared by Ask and Index) ------------------
+doc_path = DEFAULT_DOC
+if uploaded is not None:
+    doc_path = os.path.join(APP_DIR, f"_uploaded_{uploaded.name}")
+    with open(doc_path, "wb") as fh:
+        fh.write(uploaded.getvalue())
+chunks, searcher = build_doc(doc_path, pipeline_sig())
+
+st.title("Modern RAG in Practice")
+tab_ask, tab_race, tab_index = st.tabs(["Ask", "Race", "Index"])
 
 with tab_ask:
-    doc_path = DEFAULT_DOC
-    if uploaded is not None:
-        doc_path = os.path.join(APP_DIR, f"_uploaded_{uploaded.name}")
-        with open(doc_path, "wb") as fh:
-            fh.write(uploaded.getvalue())
-    chunks, searcher = build_doc(doc_path, pipeline_sig())
     st.caption(f"{len(chunks)} chunks indexed from the document.")
-
     question = st.text_input("Your question", placeholder="e.g. How much does membership cost?")
     if st.button("Ask", type="primary") and question.strip():
         t0 = time.perf_counter()
@@ -158,9 +154,8 @@ with tab_ask:
                 st.divider()
 
 with tab_race:
-    st.write("Score the current pipeline on the benchmark (108 questions over a "
-             "SQuAD-based corpus). Edit `pipeline.py` to try a different strategy, "
-             "then run again. Keep **TOP_K** the same as the rest of the room.")
+    st.caption("Score the pipeline on the benchmark (120 questions, SQuAD-based). "
+               "Edit pipeline.py, then run again. Keep TOP_K the same across the room.")
     if st.button("Run benchmark", type="primary"):
         _, bench_searcher = build_bench(pipeline_sig())
         gold = load_gold(GOLD)
@@ -184,9 +179,7 @@ with tab_race:
         else:
             c3.caption("Answer@k needs a Gemini key")
 
-        import pandas as pd
         rows = result["rows"]
-
         buckets = {"rank 1": 0, "rank 2": 0, "rank 3+": 0, "missed": 0}
         for r in rows:
             if not r["found"]:
@@ -211,10 +204,10 @@ with tab_race:
             "Rank": st.column_config.NumberColumn("Rank", help="position of the first correct chunk (blank = missed)"),
         }
         if any(r["answer_hit"] is not None for r in rows):
-            df["AI ✓"] = df["answer_hit"]
-            columns.append("AI ✓")
-            colcfg["AI ✓"] = st.column_config.CheckboxColumn("AI ✓", help="the LLM answer contained the gold phrase")
-        st.caption("Every question (missed ones first):")
+            df["AI"] = df["answer_hit"]
+            columns.append("AI")
+            colcfg["AI"] = st.column_config.CheckboxColumn("AI", help="the LLM answer contained the gold phrase")
+        st.caption("Every question (missed first):")
         st.dataframe(df[columns], hide_index=True, use_container_width=True, height=360, column_config=colcfg)
 
         label = f"{pipeline.split.__module__.split('.')[-1]}/{pipeline.Search.__module__.split('.')[-1]}"
@@ -225,8 +218,26 @@ with tab_race:
             line += f"  Answer@{pipeline.TOP_K}={result['answer_rate']:.3f}"
         st.caption("Copy your best line into benchmark/leaderboard.md:")
         st.code(line, language="text")
-
         if FEEDBACK_FORM_URL:
             st.link_button("Submit feedback & scores", FEEDBACK_FORM_URL)
-        else:
-            st.caption("Tip: set FEEDBACK_FORM_URL in app.py to add a feedback button here.")
+
+with tab_index:
+    st.caption(f"{len(chunks)} chunks · splitter={pipeline.split.__module__.split('.')[-1]} · "
+               f"chunk={pipeline.CHUNK_SIZE}/{pipeline.OVERLAP}")
+    lengths = [len(c) for c in chunks]
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Chunks", len(chunks))
+    m2.metric("Avg chars", sum(lengths) // len(lengths))
+    m3.metric("Max chars", max(lengths))
+    st.caption("Chunk length (characters):")
+    st.bar_chart(pd.Series(lengths, name="chars"), color="#8a8a8a")
+    idx = pd.DataFrame({
+        "#": list(range(len(chunks))),
+        "chars": lengths,
+        "preview": [c[:160].replace("\n", " ") for c in chunks],
+    })
+    st.dataframe(idx, hide_index=True, use_container_width=True, height=360, column_config={
+        "#": st.column_config.NumberColumn("#", width="small"),
+        "chars": st.column_config.NumberColumn("chars", width="small"),
+        "preview": st.column_config.TextColumn("preview", width="large"),
+    })
