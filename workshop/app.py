@@ -102,40 +102,32 @@ def pipeline_diagram_html():
     )
 
 
-@st.cache_resource(show_spinner=False)
-def build_doc(doc_path, sig, _on_stage=None):
-    return pipeline.build(load_pdf(doc_path), on_stage=_on_stage)
-
-
-@st.cache_resource(show_spinner=False)
-def build_bench(sig, _on_stage=None):
-    return pipeline.build(open(CORPUS, encoding="utf-8").read(), on_stage=_on_stage)
-
-
-def staged_build(label, builder, sig):
-    """Run a cached build, narrating each real stage in a live status box.
-    On a cache hit the build is instant and the box clears itself.
+def build_index(cache_key, load_text, sig, label):
+    """Build (chunks, searcher) once, narrating each real stage in a live
+    status box. Cached in session_state, so a rebuild only runs when the
+    pipeline signature changes; cache hits return instantly with no box.
     """
+    key = f"index::{cache_key}::{sig}"
+    if key in st.session_state:
+        return st.session_state[key]
+
     box = st.empty()
     with box:
         status = st.status(label, expanded=True)
-    fired = {"hit": False, "chunks": 0}
+    state = {"chunks": 0}
 
     def on_stage(name, n=None):
-        fired["hit"] = True
         if name == "split":
-            fired["chunks"] = n
+            state["chunks"] = n
             status.write(f"split   → {n} chunks")
             status.update(label="Building the search index...")
         elif name == "index":
             status.write(f"index   → {n} vectors ready")
 
-    result = builder(sig, _on_stage=on_stage)
-    if fired["hit"]:
-        status.update(label=f"Ready — {fired['chunks']} chunks indexed",
-                      state="complete", expanded=False)
-    else:
-        box.empty()
+    result = pipeline.build(load_text(), on_stage=on_stage)
+    status.update(label=f"Ready — {state['chunks']} chunks indexed",
+                  state="complete", expanded=False)
+    st.session_state[key] = result
     return result
 
 
@@ -177,11 +169,8 @@ if uploaded is not None:
     doc_path = os.path.join(APP_DIR, f"_uploaded_{uploaded.name}")
     with open(doc_path, "wb") as fh:
         fh.write(uploaded.getvalue())
-chunks, searcher = staged_build(
-    "Indexing the document...",
-    lambda sig, _on_stage=None: build_doc(doc_path, sig, _on_stage=_on_stage),
-    pipeline_sig(),
-)
+chunks, searcher = build_index(
+    doc_path, lambda: load_pdf(doc_path), pipeline_sig(), "Indexing the document...")
 
 st.title("Modern RAG in Practice")
 st.markdown(pipeline_diagram_html(), unsafe_allow_html=True)
@@ -221,8 +210,9 @@ with tab_race:
     st.caption("Score the pipeline on the benchmark (120 questions, SQuAD-based). "
                "Edit pipeline.py, then run again. Keep TOP_K the same across the room.")
     if st.button("Run benchmark", type="primary"):
-        _, bench_searcher = staged_build(
-            "Indexing the benchmark corpus...", build_bench, pipeline_sig())
+        _, bench_searcher = build_index(
+            "benchmark", lambda: open(CORPUS, encoding="utf-8").read(),
+            pipeline_sig(), "Indexing the benchmark corpus...")
         gold = load_gold(GOLD)
         with st.spinner(f"Scoring {len(gold)} questions..."):
             def retrieve_fn(q):
