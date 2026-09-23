@@ -10,6 +10,7 @@ Four tabs:
 pipeline.py still holds the defaults the sidebar starts from.
 """
 
+import html
 import importlib
 import os
 import sys
@@ -46,7 +47,7 @@ st.markdown(
       }
       .stApp { background: #000; }
       h1, h2, h3 { letter-spacing: -0.02em; font-weight: 700; }
-      section[data-testid="stSidebar"] { min-width: 260px; max-width: 300px; }
+      section[data-testid="stSidebar"][aria-expanded="true"] { min-width: 260px; max-width: 300px; }
       .stButton > button, .stFormSubmitButton > button {
         border-radius: 6px; border: 1px solid #2a2a2a; background: #fff; color: #000; font-weight: 600;
       }
@@ -117,6 +118,35 @@ def pipeline_diagram_html(cfg):
     )
 
 
+def tips_animation_html(tips, per=3.0):
+    """CSS-only rotating tips. Runs client-side, so it keeps animating while the
+    Python build blocks on embedding.
+    """
+    n = len(tips)
+    total = n * per
+    slot = 100.0 / n  # each tip's share of the full loop
+    keyframes = (
+        f"@keyframes tipcycle{{"
+        f"0%{{opacity:0;transform:translateY(6px)}}"
+        f"{slot*0.12:.2f}%{{opacity:1;transform:none}}"
+        f"{slot*0.85:.2f}%{{opacity:1;transform:none}}"
+        f"{slot:.2f}%{{opacity:0;transform:translateY(-6px)}}"
+        f"100%{{opacity:0}}}}"
+    )
+    divs = "".join(
+        f'<div class="tip" style="animation-delay:{i*per:.1f}s">{html.escape(t)}</div>'
+        for i, t in enumerate(tips)
+    )
+    return (
+        f"<style>{keyframes}"
+        f".tips-wrap{{position:relative;height:40px;margin:2px 0 4px}}"
+        f".tips-wrap .tip{{position:absolute;left:0;right:0;top:0;opacity:0;color:#b8b8b8;"
+        f"font-size:13px;animation-name:tipcycle;animation-duration:{total:.1f}s;"
+        f"animation-iteration-count:infinite;animation-timing-function:ease-in-out}}</style>"
+        f'<div class="tips-wrap">{divs}</div>'
+    )
+
+
 def build_index(cache_key, load_text, sig, label, build_fn):
     """Build (chunks, searcher) once, narrating each real stage in a live
     status box. Cached in session_state, so a rebuild only runs when the
@@ -129,6 +159,7 @@ def build_index(cache_key, load_text, sig, label, build_fn):
     box = st.empty()
     with box:
         status = st.status(label, expanded=True)
+    status.markdown(tips_animation_html(catalog.TIPS), unsafe_allow_html=True)
     state = {"chunks": 0}
 
     def on_stage(name, n=None):
@@ -261,7 +292,14 @@ with tab_race:
         "Benchmark size", ["Quick test (20)", "Full (120)"], horizontal=True,
         help="Quick runs an evenly-spread 20-question sample — good while tuning. "
              "Run Full for the score you report.")
-    if st.button("Run benchmark", type="primary"):
+    run_col, coach_col = st.columns([1, 1.3])
+    run = run_col.button("Run benchmark", type="primary")
+    with coach_col.popover("Copy coach prompt"):
+        st.caption("Paste this into ChatGPT or Claude. It coaches you through the "
+                   "challenge on principles — it won't just hand you the best config. "
+                   "Use the copy icon in the corner.")
+        st.code(catalog.coach_prompt(cfg), language="text")
+    if run:
         bench = build_index("benchmark", lambda: open(CORPUS, encoding="utf-8").read(),
                             build_sig(cfg), "Indexing the benchmark corpus...", make_build_fn(cfg))
         if bench is None:

@@ -83,6 +83,47 @@ GLOSSARY = {
     "answer_rate": "Answer@k: the fraction of questions the LLM answered with the gold phrase. Needs a Gemini key.",
 }
 
+# Rotating tips shown while the index builds.
+TIPS = [
+    "Chunks too big bury the answer in noise; too small and it loses context.",
+    "Overlap keeps a sentence that straddles a boundary from being split across chunks.",
+    "BM25 matches keywords; dense/semantic search matches meaning. Hybrid tries for both.",
+    "Recall@k asks: did a chunk with the answer land in your top-k? It's the main score.",
+    "MRR rewards ranking the right chunk first, not just somewhere in the top-k.",
+    "A reranker reads each chunk together with the query. Slower, often more accurate.",
+    "Swap methods in the sidebar and the app re-indexes automatically. No restart.",
+    "Open the Learn tab to jump straight to the notebook section behind any method.",
+    "Embeddings place similar text near each other; search finds the nearest neighbors.",
+]
+
+
+def coach_prompt(cfg):
+    """A principle-based prompt users paste into their own LLM. It asks the LLM
+    to teach the reasoning, not hand over the winning configuration.
+    """
+    reranker = "on" if cfg["use_reranker"] else "off"
+    return f"""You are my coach for a hands-on RAG retrieval challenge. Teach me to reason about it. Do NOT hand me the answer or name the single best configuration.
+
+The challenge: I have a fixed corpus and a set of questions. My pipeline retrieves the top-k text chunks for each question, and I'm scored on:
+- Recall@k: did a chunk containing the answer make my top-k? (the main score)
+- MRR: how high was the first correct chunk ranked?
+- Answer@k (only if an LLM key is set): did the generated answer contain the gold phrase?
+
+I can change these knobs, and only these:
+- splitter: how the document is cut into chunks (currently: {cfg['splitter']}). Options include recursive, character, token, sentence, and header-aware splitters.
+- chunk size / overlap (currently: {cfg['chunk_size']} / {cfg['overlap']}).
+- search method (currently: {cfg['searcher']}). Options include BM25 keyword, dense/semantic, hybrid, query fusion, reciprocal rank fusion, ensemble, router.
+- reranker on/off (currently: {reranker}).
+- top_k is fixed for everyone, so I cannot just raise it.
+
+Coach me like this:
+1. Explain, in principle, what each knob changes about WHICH chunks get retrieved and HOW they get ranked, and the trade-offs (big vs small chunks, lexical vs semantic matching, when a reranker earns its cost).
+2. Ask me diagnostic questions about where my current setup is likely losing points (outright misses vs correct-but-low-ranked).
+3. Help me form and prioritize hypotheses to test myself, one change at a time, and how to read the score/rank chart after each run.
+
+Never just state the winning combination. I want to understand it, not copy it. If I ask for "the best settings," push back and turn it into a question that makes me reason it out."""
+
+
 # Ordered stages for the Learn tab. (selectable, folder, methods)
 STAGES = [
     ("split", True, "splitting", SPLITTING),
