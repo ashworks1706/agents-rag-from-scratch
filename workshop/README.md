@@ -10,11 +10,13 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-That's it. The app opens in your browser with three tabs:
+That's it. The app opens in your browser with four tabs:
 
 - **Ask** — ask a question, get an answer with its sources, scores, and timing.
-- **Race** — score your setup on a fixed question set and try to beat others.
+- **Race** — score your setup on the question set and try to beat others.
 - **Index** — see the chunks the current document was split into.
+- **Learn** — every method in the library, each linked to the section of the
+  deep-dive notebook that explains it.
 
 Works on your laptop, in GitHub Codespaces, or deployed (see below).
 
@@ -34,22 +36,12 @@ export GEMINI_API_KEY=your_key_here
 
 ## Change the pipeline
 
-Everything the app runs is in **`pipeline.py`**. Edit it, save, and the app
-reloads:
+Use the **sidebar**: pick a splitter and a search method, set chunk size /
+overlap / top_k, and flip the reranker. The app re-indexes live — no code
+editing, no restart. Hover a **?** icon for what each setting means, and open
+the **Learn** tab for every method with a link into the deep-dive notebook.
 
-```python
-from splitting.recursive import split                        # the splitter
-from searching.semantic_topk import SemanticSearch as Search  # the search method
-from reranking.cross_encoder import Reranker
-
-CHUNK_SIZE = 500
-OVERLAP = 100
-TOP_K = 3
-USE_RERANKER = False
-```
-
-Swap an import to try a different method, change a number, or flip
-`USE_RERANKER`. The choices come from these folders (one file per method):
+The choices come from these folders (one file per method):
 
 ```
 splitting/    how to cut the document into chunks
@@ -59,12 +51,14 @@ searching/    ready-made retrievers (semantic, bm25, hybrid, rrf, ...)
 reranking/    reorder results for accuracy
 ```
 
-Open any file to see how that method works.
+Prefer code? **`pipeline.py`** holds the defaults the sidebar starts from; edit
+it and the app picks it up on reload.
 
 ## The race
 
-Pick a strategy in `pipeline.py`, open the **Race** tab, and click **Run
-benchmark**. It scores 120 questions over a hard SQuAD-based corpus:
+Pick a strategy in the sidebar, open the **Race** tab, and click **Run
+benchmark**. Use **Quick test (20)** while tuning and **Full (120)** for the
+score you report. It scores questions over a hard SQuAD-based corpus:
 
 - **Recall@k** — did the answer show up in your top results? (main score)
 - **MRR** — did it rank the right chunk high? (tiebreaker)
