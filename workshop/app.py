@@ -1,17 +1,18 @@
 """Streamlit app for the Modern RAG workshop.
 
-Pick your methods in the sidebar (no code editing) and the app re-indexes live.
-Four tabs:
-  Ask    - ask a question, see the answer, sources, and latency.
-  Race   - score the pipeline on the benchmark (Recall@k / MRR).
-  Index  - see the chunks the current document was split into.
-  Learn  - every method, with a link to the deep-dive notebook.
+A top navbar switches pages; the sidebar edits the pipeline live (no code editing).
+  Pipeline - a rotatable 3D view of the current pipeline.
+  Ask      - ask a question, see the answer, sources, and latency.
+  Race     - score the pipeline on the benchmark, beat your best.
+  Index    - see the chunks the current document was split into.
+  Learn    - every method, with a link to the deep-dive notebook.
 
 pipeline.py still holds the defaults the sidebar starts from.
 """
 
 import html
 import importlib
+import json
 import os
 import sys
 import time
@@ -20,6 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 from utils import load_pdf
 from utils.benchmark import load_gold, score
@@ -60,7 +62,10 @@ st.markdown(
         border: 1px solid #1c1c1c; border-radius: 8px;
       }
       [data-testid="stMetric"] { padding: 12px 14px; }
-      .stTabs [data-baseweb="tab-list"] { gap: 20px; }
+      /* navbar: segmented control reads as a top nav */
+      [data-testid="stSegmentedControl"] { justify-content: flex-end; }
+      .brandbar { display:flex; align-items:baseline; gap:10px; }
+      .brandbar .dot { width:9px; height:9px; border-radius:50%; background:#fff; display:inline-block; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -89,33 +94,131 @@ def build_sig(cfg):
     return (cfg["splitter"], cfg["searcher"], cfg["chunk_size"], cfg["overlap"])
 
 
-def pipeline_diagram_html(cfg):
-    """A left-to-right node diagram of the current pipeline."""
-
-    def node(label, value, sub="", dim=False):
-        color = "#4a4a4a" if dim else "#e6e6e6"
-        border = "#161616" if dim else "#2a2a2a"
-        sub_html = f'<div style="font-size:11px;color:#7a7a7a">{sub}</div>' if sub else ""
-        return (
-            f'<div style="border:1px solid {border};border-radius:8px;padding:7px 12px;'
-            f'background:#0a0a0a;text-align:center;color:{color}">'
-            f'<div style="font-size:11px;color:#7a7a7a">{label}</div>'
-            f'<div style="font-weight:700">{value}</div>{sub_html}</div>'
-        )
-
-    arrow = '<div style="color:#5a5a5a">&rarr;</div>'
+def pipeline_3d_html(cfg):
+    """A rotatable 3D diagram of the current pipeline (three.js, self-contained)."""
     nodes = [
-        node("input", "document"),
-        node("split", cfg["splitter"], f"{cfg['chunk_size']}/{cfg['overlap']}"),
-        node("search", cfg["searcher"], f"top {cfg['top_k']}"),
-        node("rerank", "cross_encoder" if cfg["use_reranker"] else "off", dim=not cfg["use_reranker"]),
-        node("answer", "gemini" if HAS_KEY else "stub", dim=not HAS_KEY),
+        {"stage": "input", "value": "document", "sub": "", "dim": False},
+        {"stage": "split", "value": cfg["splitter"], "sub": f"{cfg['chunk_size']}/{cfg['overlap']}", "dim": False},
+        {"stage": "search", "value": cfg["searcher"], "sub": f"top {cfg['top_k']}", "dim": False},
+        {"stage": "rerank", "value": "cross_encoder" if cfg["use_reranker"] else "off",
+         "sub": "", "dim": not cfg["use_reranker"]},
+        {"stage": "answer", "value": "gemini" if HAS_KEY else "stub", "sub": "", "dim": not HAS_KEY},
     ]
-    return (
-        '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;'
-        'margin:4px 0 16px;font-family:ui-monospace,SF Mono,Menlo,monospace">'
-        + arrow.join(nodes) + "</div>"
-    )
+    data = json.dumps(nodes)
+    return f"""
+<!doctype html><html><head><meta charset="utf-8"><style>
+  html,body{{margin:0;height:100%;background:#000;overflow:hidden}}
+  #c{{width:100%;height:380px;display:block;cursor:grab}}
+  #c:active{{cursor:grabbing}}
+  #hint{{position:absolute;left:10px;bottom:8px;color:#5a5a5a;font:12px ui-monospace,Menlo,monospace}}
+</style></head><body>
+<canvas id="c"></canvas>
+<div id="hint">drag to rotate · scroll to zoom</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const NODES = {data};
+const canvas = document.getElementById('c');
+const W = canvas.clientWidth, H = 380;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
+camera.position.set(0, 3.2, 12);
+const renderer = new THREE.WebGLRenderer({{canvas, antialias:true, alpha:true}});
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(W, H, false);
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(4,8,10); scene.add(dir);
+
+let controls = null;
+if (THREE.OrbitControls) {{
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  controls.autoRotate = true; controls.autoRotateSpeed = 0.8;
+  controls.enablePan = false; controls.minDistance = 6; controls.maxDistance = 20;
+}}
+
+function label(node) {{
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
+  const g = cv.getContext('2d'); g.clearRect(0,0,256,128);
+  const dim = node.dim;
+  g.textAlign = 'center';
+  g.fillStyle = dim ? '#6a6a6a' : '#8a8a8a'; g.font = '22px monospace';
+  g.fillText(node.stage, 128, 34);
+  g.fillStyle = dim ? '#6a6a6a' : '#f2f2f2'; g.font = 'bold 26px monospace';
+  g.fillText(node.value, 128, 70);
+  if (node.sub) {{ g.fillStyle = '#6a6a6a'; g.font = '18px monospace'; g.fillText(node.sub, 128, 100); }}
+  const tex = new THREE.CanvasTexture(cv); tex.minFilter = THREE.LinearFilter;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({{map:tex, transparent:true}}));
+  sp.scale.set(2.6, 1.3, 1);
+  return sp;
+}}
+
+const spacing = 2.9;
+const x0 = -(NODES.length - 1) * spacing / 2;
+const boxes = [];
+NODES.forEach((n, i) => {{
+  const x = x0 + i * spacing;
+  const mat = new THREE.MeshStandardMaterial({{
+    color: n.dim ? 0x1a1a1a : 0xdedede, metalness: 0.2, roughness: 0.55,
+    emissive: n.dim ? 0x000000 : 0x111111
+  }});
+  const box = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.1, 0.6), mat);
+  box.position.set(x, 0, 0); scene.add(box); boxes.push(box);
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(box.geometry),
+    new THREE.LineBasicMaterial({{color: n.dim ? 0x2a2a2a : 0x000000}}));
+  box.add(edges);
+  const sp = label(n); sp.position.set(x, 1.35, 0.4); scene.add(sp);
+}});
+
+// flowing particles along the pipeline
+const flow = [];
+for (let i = 0; i < NODES.length - 1; i++) {{
+  for (let j = 0; j < 3; j++) {{
+    const p = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 10),
+      new THREE.MeshBasicMaterial({{color: 0xffffff}}));
+    scene.add(p); flow.push({{mesh:p, seg:i, t: j/3}});
+  }}
+  // static connector line
+  const a = new THREE.Vector3(x0 + i*spacing + 0.85, 0, 0);
+  const b = new THREE.Vector3(x0 + (i+1)*spacing - 0.85, 0, 0);
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),
+    new THREE.LineBasicMaterial({{color:0x333333}}));
+  scene.add(line);
+}}
+
+const ray = new THREE.Raycaster(); const mouse = new THREE.Vector2(-2,-2);
+renderer.domElement.addEventListener('pointermove', e => {{
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - r.left)/r.width)*2 - 1;
+  mouse.y = -((e.clientY - r.top)/r.height)*2 + 1;
+}});
+
+function animate() {{
+  requestAnimationFrame(animate);
+  flow.forEach(f => {{
+    f.t += 0.012; if (f.t > 1) f.t -= 1;
+    const ax = x0 + f.seg*spacing + 0.85, bx = x0 + (f.seg+1)*spacing - 0.85;
+    f.mesh.position.set(ax + (bx-ax)*f.t, 0, 0);
+  }});
+  ray.setFromCamera(mouse, camera);
+  const hit = ray.intersectObjects(boxes)[0];
+  boxes.forEach(b => {{
+    const target = (hit && hit.object === b) ? 1.14 : 1.0;
+    b.scale.x += (target - b.scale.x)*0.2;
+    b.scale.y += (target - b.scale.y)*0.2;
+    b.scale.z += (target - b.scale.z)*0.2;
+  }});
+  if (controls) controls.update();
+  renderer.render(scene, camera);
+}}
+animate();
+window.addEventListener('resize', () => {{
+  const w = canvas.clientWidth; renderer.setSize(w, H, false);
+  camera.aspect = w/H; camera.updateProjectionMatrix();
+}});
+</script></body></html>
+"""
 
 
 def tips_animation_html(tips, per=3.0):
@@ -199,8 +302,14 @@ def retrieve_scored(searcher, query, cfg):
     return results[:cfg["top_k"]]
 
 
+def make_build_fn(cfg):
+    return lambda text, on_stage=None: catalog.build_from_config(text, cfg, on_stage)
+
+
 # --- sidebar: edit the pipeline in the UI ------------------------------------
 with st.sidebar:
+    st.markdown('<div class="brandbar"><span class="dot"></span>'
+                '<strong>Modern RAG</strong></div>', unsafe_allow_html=True)
     st.caption("PIPELINE — change it here, the app re-indexes live")
     splitters = list(catalog.SPLITTING)
     searchers = list(catalog.SEARCHING)
@@ -230,7 +339,6 @@ with st.sidebar:
     if FEEDBACK_FORM_URL:
         st.link_button("Feedback & scores", FEEDBACK_FORM_URL)
 
-# --- build the Ask document once (shared by Ask and Index) ------------------
 doc_path = DEFAULT_DOC
 if uploaded is not None:
     doc_path = os.path.join(APP_DIR, f"_uploaded_{uploaded.name}")
@@ -238,23 +346,53 @@ if uploaded is not None:
         fh.write(uploaded.getvalue())
 
 
-def make_build_fn(cfg):
-    return lambda text, on_stage=None: catalog.build_from_config(text, cfg, on_stage)
+def ensure_doc():
+    """Build the Ask/Index document, or show an error and stop this page."""
+    built = build_index(doc_path, lambda: load_pdf(doc_path), build_sig(cfg),
+                        "Indexing the document...", make_build_fn(cfg))
+    if built is None:
+        st.error(f"Could not build '{cfg['searcher']}' + '{cfg['splitter']}'. "
+                 "Some methods need extra packages — see requirements-modular.txt.")
+        st.stop()
+    return built
 
 
-st.title("Modern RAG in Practice")
-st.markdown(pipeline_diagram_html(cfg), unsafe_allow_html=True)
-tab_ask, tab_race, tab_index, tab_learn = st.tabs(["Ask", "Race", "Index", "Learn"])
+# --- navbar -----------------------------------------------------------------
+PAGES = ["Pipeline", "Ask", "Race", "Index", "Learn"]
+HEADINGS = {
+    "Pipeline": "Your RAG pipeline, live. Drag to rotate; change methods in the sidebar.",
+    "Ask": "Ask a question and see the grounded answer, its sources, and timing.",
+    "Race": "Score your pipeline on the benchmark and beat your best.",
+    "Index": "See how the current document was split into chunks.",
+    "Learn": "Every method in the library, linked to the deep-dive notebook.",
+}
+brand_col, nav_col = st.columns([1, 2])
+with brand_col:
+    st.markdown("### Modern RAG in Practice")
+if hasattr(st, "segmented_control"):
+    page = nav_col.segmented_control("nav", PAGES, default="Pipeline",
+                                     label_visibility="collapsed", key="nav") or "Pipeline"
+else:
+    page = nav_col.radio("nav", PAGES, horizontal=True,
+                         label_visibility="collapsed", key="nav")
+st.divider()
+st.header(page)
+st.caption(HEADINGS[page])
 
-built = build_index(doc_path, lambda: load_pdf(doc_path), build_sig(cfg),
-                    "Indexing the document...", make_build_fn(cfg))
-if built is None:
-    st.error(f"Could not build '{cfg['searcher']}' + '{cfg['splitter']}'. "
-             "Some methods need extra packages — see requirements-modular.txt.")
-    st.stop()
-chunks, searcher = built
 
-with tab_ask:
+# --- pages ------------------------------------------------------------------
+if page == "Pipeline":
+    components.html(pipeline_3d_html(cfg), height=390)
+    a, b, c, d = st.columns(4)
+    a.metric("splitter", cfg["splitter"])
+    b.metric("search", cfg["searcher"])
+    c.metric("top_k", cfg["top_k"])
+    d.metric("reranker", "on" if cfg["use_reranker"] else "off")
+    st.caption("Each box is a stage. Hover a stage to focus it. Dimmed stages are off "
+               "(no reranker, or no Gemini key). Open **Learn** for what each method does.")
+
+elif page == "Ask":
+    chunks, searcher = ensure_doc()
     st.caption(f"{len(chunks)} chunks indexed from the document.")
     question = st.text_input("Your question", placeholder="e.g. How much does membership cost?")
     if st.button("Ask", type="primary") and question.strip():
@@ -285,9 +423,10 @@ with tab_ask:
                 st.write(chunk)
                 st.divider()
 
-with tab_race:
-    st.caption("Score the pipeline on the benchmark (SQuAD-based). "
-               "Change methods in the sidebar, then run again. Keep top_k the same across the room.")
+elif page == "Race":
+    best = st.session_state.get("best_recall")
+    if best is not None:
+        st.caption(f"Personal best this session: Recall = {best:.3f}")
     mode = st.radio(
         "Benchmark size", ["Quick test (20)", "Full (120)"], horizontal=True,
         help="Quick runs an evenly-spread 20-question sample — good while tuning. "
@@ -338,14 +477,46 @@ with tab_race:
         bar.empty()
         line.empty()
 
+        recall = result["recall"]
+        prev = st.session_state.get("last_recall")
+        prev_best = st.session_state.get("best_recall")
+        delta = None if prev is None else recall - prev
+        is_best = prev_best is None or recall > prev_best
+        st.session_state["last_recall"] = recall
+        if is_best:
+            st.session_state["best_recall"] = recall
+
+        # dopamine: celebrate high scores and improvements
+        if recall >= 0.9:
+            st.balloons()
+            st.success(f"High score — Recall {recall:.1%}. That's a strong pipeline.")
+        elif is_best and prev_best is not None:
+            st.balloons()
+            st.success(f"New personal best — up from {prev_best:.3f} to {recall:.3f}.")
+        elif delta is not None and delta > 0:
+            st.toast(f"Improved by +{delta:.3f}")
+        elif delta is not None and delta < 0:
+            st.toast(f"Down {delta:.3f} from last run")
+
         c1, c2, c3 = st.columns(3)
-        c1.metric(f"Recall@{cfg['top_k']}", f"{result['recall']:.3f}", f"{result['hits']}/{result['n']}",
-                  delta_color="off", help=catalog.GLOSSARY["recall"])
+        c1.metric(f"Recall@{cfg['top_k']}", f"{result['recall']:.3f}",
+                  None if delta is None else f"{delta:+.3f}", help=catalog.GLOSSARY["recall"])
         c2.metric("MRR", f"{result['mrr']:.3f}", help=catalog.GLOSSARY["mrr"])
         if result["answer_rate"] is not None:
             c3.metric(f"Answer@{cfg['top_k']}", f"{result['answer_rate']:.3f}", help=catalog.GLOSSARY["answer_rate"])
         else:
             c3.caption("Answer@k needs a Gemini key")
+
+        color = "#37d67a" if recall >= 0.9 else ("#e6e6e6" if recall >= 0.5 else "#e0a24a")
+        st.markdown(
+            f'<div style="font-size:13px;color:#7a7a7a">score</div>'
+            f'<div style="font-size:40px;font-weight:800;color:{color};line-height:1.1">'
+            f'{recall:.1%}</div>'
+            f'<div style="color:#7a7a7a;font-size:12px">{result["hits"]}/{result["n"]} questions found'
+            + (f' · best {st.session_state["best_recall"]:.1%}' if st.session_state.get("best_recall") else "")
+            + "</div>",
+            unsafe_allow_html=True,
+        )
         if mode.startswith("Quick"):
             st.caption(f"Quick sample of {result['n']} — run Full (120) before reporting a score.")
 
@@ -383,15 +554,16 @@ with tab_race:
         label = f"{cfg['splitter']}/{cfg['searcher']}"
         if cfg["use_reranker"]:
             label += "+rerank"
-        best = f"{label:<28} Recall@{cfg['top_k']}={result['recall']:.3f}  MRR={result['mrr']:.3f}"
+        best_line = f"{label:<28} Recall@{cfg['top_k']}={result['recall']:.3f}  MRR={result['mrr']:.3f}"
         if result["answer_rate"] is not None:
-            best += f"  Answer@{cfg['top_k']}={result['answer_rate']:.3f}"
+            best_line += f"  Answer@{cfg['top_k']}={result['answer_rate']:.3f}"
         st.caption("Copy your best line into benchmark/leaderboard.md:")
-        st.code(best, language="text")
+        st.code(best_line, language="text")
         if FEEDBACK_FORM_URL:
             st.link_button("Submit feedback & scores", FEEDBACK_FORM_URL)
 
-with tab_index:
+elif page == "Index":
+    chunks, _ = ensure_doc()
     st.caption(f"{len(chunks)} chunks · splitter={cfg['splitter']} · "
                f"chunk={cfg['chunk_size']}/{cfg['overlap']}")
     lengths = [len(c) for c in chunks]
@@ -412,9 +584,7 @@ with tab_index:
         "preview": st.column_config.TextColumn("preview", width="large"),
     })
 
-with tab_learn:
-    st.caption("Every method in the library, with a link to the section of the "
-               "deep-dive notebook that explains it. Pick methods in the sidebar.")
+elif page == "Learn":
     selected = {"split": cfg["splitter"], "search": cfg["searcher"]}
     for stage, selectable, folder, methods in catalog.STAGES:
         head = f"{stage} · `{folder}/`"
