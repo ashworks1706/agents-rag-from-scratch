@@ -4,6 +4,13 @@
 [logger]
 level = "error"
 
+# Run cleanly behind a reverse proxy (GitHub Codespaces port forwarding,
+# Streamlit Community Cloud). Without these the websocket can fail to connect.
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+
 [theme]
 base = "dark"
 primaryColor = "#ffffff"
